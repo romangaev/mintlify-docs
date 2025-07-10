@@ -56,17 +56,17 @@
     "global": {
       "anchors": [
         {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
+          "anchor": "LinkedIn",
+          "href": "https://www.linkedin.com/company/nebius/",
+          "icon": "linkedin"
         },
         {
-          "anchor": "Community",
+          "anchor": "Discord Community",
           "href": "https://discord.com/invite/WJ2DUQRz4m",
           "icon": "discord"
         },
         {
-          "anchor": "Twitter",
+          "anchor": "Twitter Blog",
           "href": "https://x.com/nebiusaistudio",
           "icon": "twitter"
         }
