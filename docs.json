@@ -76,8 +76,8 @@
     }
   },
   "logo": {
-    "light": "/logo/NEBIUS-AI-STUDIO-LOGO-w.svg",
-    "dark": "/logo/NEBIUS-AI-STUDIO-LOGO-b.svg"
+    "light": "/logo/NEBIUS-AI-STUDIO-LOGO-b.svg",
+    "dark": "/logo/NEBIUS-AI-STUDIO-LOGO-w.svg"
   },
   "navbar": {
     "links": [
