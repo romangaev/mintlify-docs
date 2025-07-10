@@ -22,14 +22,14 @@
             ]
           },
           {
-            "group": "Essentials",
+            "group": "Core services",
             "pages": [
-              "essentials/markdown",
-              "essentials/code",
+              "essentials/finetuning",
+              "essentials/inference",
               "essentials/images",
-              "essentials/settings",
-              "essentials/navigation",
-              "essentials/reusable-snippets"
+              "essentials/agents",
+              "essentials/billing"
+              "essentials/enterprise"
             ]
           }
         ]
