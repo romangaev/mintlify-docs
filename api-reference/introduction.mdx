@@ -1,33 +1,60 @@
 ---
-title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+title: "Introduction: Nebius AI Studio API"
+description: "Example section for showcasing API endpoints"
 ---
 
 <Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
+  Nebius AI Studio offers an [OpenAI-compatible API](https://studio.nebius.com/api-reference) for inference and fine-tuning.
 </Note>
 
-## Welcome
+Here are examples of Python, JavaScript SDK and cURL command that makes an API request from your terminal:
 
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
+```python
+import os
+from openai import OpenAI
 
-<Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
->
-  View the OpenAPI specification file
-</Card>
+client = OpenAI(
+    base_url="https://api.studio.nebius.com/v1/",
+    api_key=os.environ.get("NEBIUS_API_KEY"),
+)
+
+completion = client.chat.completions.create(
+    model="meta-llama/Meta-Llama-3.1-70B-Instruct",
+    messages=[
+        {
+            "role": "user",
+            "content": """Hello!"""
+        }
+    ],
+    temperature=0.6
+)
+
+print(completion.to_json())
+```
 
 ## Authentication
 
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
+To authenticate, include your _API key_ (e.g., `ABC123...`) in the `Authorization` header, as shown below:
 
-```json
-"security": [
-  {
-    "bearerAuth": []
-  }
-]
 ```
+Authorization: Bearer ABC123...
+```
+
+<Warning>
+  Keep your keys private; do not share or expose them in client-side code. If a key is compromised, Nebius AI Studio can automatically revoke it
+</Warning>
+
+To get an API key:
+
+1. In Nebius AI Studio, go to the  [API keys](https://studio.nebius.com/settings/api-keys) section.
+2. Click  **Create API key**.
+3. Enter the key name and then click **Create**.
+4. Save the displayed API key. You cannot open it later in Nebius AI Studio.
+
+<Tip>
+  In the [Nebius AI Studio inference playground](https://studio.nebius.com/playground), you can view your model setup and chat as code that makes API requests, and use this code in your applications. For more details, see [View code](https://docs.nebius.com/studio/inference/playground#view-code).
+</Tip>
+
+<Tip>
+  You can use [integrations with third-party instruments](https://docs.nebius.com/studio/inference/integrations) instead of the API.
+</Tip>
