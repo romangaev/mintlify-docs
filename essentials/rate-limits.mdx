@@ -10,7 +10,7 @@ Nebius AI Inference is elastic by design. When you gradually increase your wor
   If you have sustained workloads that dwarf the standard limits, [<u><u>reach out to us to upgrade to the Enterprise Tier</u></u>](https://nebius.com/?_gl=1*1ni0ub9*_gcl_au*OTY2MTI0ODU5LjE3NTA4MzkxODkuOTQxMDE3MTg3LjE3NTEwMTgyMjYuMTc1MTAxODIyNg..#ai-contact-form). Enterprise removes the soft caps described below and gives you dedicated capacity plus an SLA.
 </Tip>
 
-**How it works**
+### How it works
 
 Key idea – Limits are dynamic. If your app stays close to the ceiling, we automatically raise it. If traffic falls off, we scale it back.
 
@@ -35,3 +35,51 @@ Visual example, assuming you continue to drive ≥ 80 % utilisation each win
 <Tip>
   You can find the defaults at Rate Limits section of Nebius AI studio [Nebius AI Studio](https://studio.nebius.com/settings/rate-limits)
 </Tip>
+
+### Monitoring your headroom and handling 429s
+
+Your current rate limits are always visible in the API response headers, which are detailed further down.
+
+If you exceed the active limit you will receive **HTTP 429**. To avoid this, you can track your consumption against your limits using the `x-ratelimit-remaining-requests` and `x-ratelimit-remaining-tokens` response headers.
+
+<Tip>
+  **Use Batch API for async workloads - it has significantly higher limits. Read more**
+</Tip>
+
+### **Over-the-Limit Processing**
+
+In some cases, requests that exceed your rate limit may still be processed. This occurs when the system has spare capacity available, and your request can be handled with a lower priority without affecting other users.
+
+These responses include:
+
+```
+x-ratelimit-over-limit: yes
+```
+
+This indicates that while your request was successful, you are over your nominal limit, and subsequent requests may be throttled if you continue to exceed your quota. Treat this as an early warning—subsequent calls may be throttled.
+
+### Rate Limit Response Headers
+
+Here's a simple explanation of response headers you can use to track you limits quotas:
+
+<Expandable title="Description of Rate Limits response headers">
+  | Header                                      | Description                                                                                                                                                                                                                            |
+  | :------------------------------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | `x-ratelimit-limit-requests`                | The maximum number of requests that are permitted per minute.                                                                                                                                                                          |
+  | `x-ratelimit-limit-tokens`                  | The maximum number of tokens that are permitted per minute.                                                                                                                                                                            |
+  | `x-ratelimit-remaining-requests`            | The remaining number of requests that are permitted before exhausting the rate limit.                                                                                                                                                  |
+  | `x-ratelimit-remaining-tokens`              | The remaining number of tokens that are permitted before exhausting the rate limit. Note that the limit is replenished continuously. If your usage is sustainably below the rate limit, this number will hover near its maximum value. |
+  | `x-ratelimit-reset-requests`                | The time in seconds until the rate limit (based on requests) resets.                                                                                                                                                                   |
+  | `x-ratelimit-reset-tokens`                  | The time in seconds until the rate limit (based on tokens) resets.                                                                                                                                                                     |
+  | `x-ratelimit-dynamic-scale-requests`        | The current dynamic scale factor applied to your request rate limit.                                                                                                                                                                   |
+  | `x-ratelimit-dynamic-scale-tokens`          | The current dynamic scale factor applied to your token rate limit.                                                                                                                                                                     |
+  | `x-ratelimit-dynamic-period-remaining`      | The time in seconds until the next dynamic rate limit adjustment.                                                                                                                                                                      |
+  | `x-ratelimit-dynamic-period-usage-requests` | Your average request usage in the current adjustment period, as a percentage.                                                                                                                                                          |
+  | `x-ratelimit-dynamic-period-usage-tokens`   | Your average token usage in the current adjustment period, as a percentage.                                                                                                                                                            |
+  | `x-ratelimit-over-limit`                    | Set to "yes" if a request that is over the limit is processed. This happens when the system has spare capacity, and the request is handled with a lower priority.                                                                      |
+  | `Retry-After`                               | The time in seconds to wait before making another request if the rate limit is exceeded.                                                                                                                                               |
+</Expandable>
+
+### High‑throughput async workloads? Use the Batch API
+
+Asynchronous / batch inference is optimized for bulk jobs, utilises spare capacity and enjoys **significantly higher base limits **and **50% price discount**. Read more.
