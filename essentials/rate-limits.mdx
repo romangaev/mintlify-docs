@@ -4,3 +4,30 @@ description: "Learn how rate limiting of requests works and what are the scaling
 ---
 
 Nebius AI Inference is elastic by design. When you gradually increase your workload we scale the capacity with you. Most teams on Startup Tier never need to think about rate limits—but when you start pushing tens of thousands of requests per minute it helps to know how the platform behaves. Sudden bursts of AI Model traffic may be subject to throttling. This page explains the **dynamic rate‑limiting** system, how it auto‑scales, and the knobs you can turn when you need more headroom.
+
+<Note>
+  **Need unlimited throughput? **\
+  If you have sustained workloads that dwarf the standard limits, [<u>reach out to us to upgrade to the </u>**<u>Enterprise Tier</u>**](https://nebius.com/?_gl=1*1ni0ub9*_gcl_au*OTY2MTI0ODU5LjE3NTA4MzkxODkuOTQxMDE3MTg3LjE3NTEwMTgyMjYuMTc1MTAxODIyNg..#ai-contact-form). Enterprise removes the soft caps described below and gives you dedicated capacity plus an SLA.
+</Note>
+
+**How it works**
+
+Key idea – Limits are dynamic. If your app stays close to the ceiling, we automatically raise it. If traffic falls off, we scale it back.
+
+Every user is provided with a default rate limit cap. This limit grows automatically when you consistently operate close to your capacity and current limit.
+
+We evaluate usage in rolling 15‑minute buckets:
+
+- **Scale‑up rule** – When **average** usage in a 15‑minute window ≥ 80 % of the current limit, the limit for the _next_ window increases by 20 % (`× 1.2`).
+- **Scale‑down rule** – When average usage in a 15‑minute window ≤ 50 %, the limit for the next window decreases by one‑third (`÷ 1.5`).
+- **Hard ceiling** – The limit can grow to **20 ×** your base allocation. Beyond that we require an Enterprise plan.
+
+Visual example, assuming you continue to drive ≥ 80 % utilisation each window:
+
+| **Window** | **Scale factor** | **RPM limit** | **TPM limit** |
+| :--------- | :--------------- | :------------ | :------------ |
+| Baseline   | `1.00×`          | 60            | 400,000       |
+| \+ 15 min  | `1.20×`          | 72            | 480,000       |
+| \+ 30 min  | `1.44×`          | 86            | 576,000       |
+| \+ 1 h     | `2.07×`          | 124           | 828,000       |
+| \+ 2 h     | `4.30×`          | 258           | 1,720,000     |
