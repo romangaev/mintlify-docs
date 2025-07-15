@@ -16,6 +16,10 @@ Key idea – Limits are dynamic. If your app stays close to the ceiling, we auto
 
 Every user is provided with a default rate limit cap. This limit grows automatically when you consistently operate close to your capacity and current limit.
 
+<Tip>
+  You can find the defaults at Rate Limits section of Nebius AI studio [Nebius AI Studio](https://studio.nebius.com/settings/rate-limits)
+</Tip>
+
 We evaluate usage in rolling 15‑minute buckets:
 
 - **Scale‑up rule** – When **average** usage in a 15‑minute window ≥ 80 % of the current limit, the limit for the _next_ window increases by 20 % (`× 1.2`).
@@ -31,10 +35,6 @@ Visual example, assuming you continue to drive ≥ 80 % utilisation each win
 | \+ 30 min  | `1.44×`          | 86            | 576,000       |
 | \+ 1 h     | `2.07×`          | 124           | 828,000       |
 | \+ 2 h     | `4.30×`          | 258           | 1,720,000     |
-
-<Tip>
-  You can find the defaults at Rate Limits section of Nebius AI studio [Nebius AI Studio](https://studio.nebius.com/settings/rate-limits)
-</Tip>
 
 ### Monitoring your headroom and handling 429s
 
@@ -82,4 +82,4 @@ Here's a simple explanation of response headers you can use to track you limits 
 
 ### High‑throughput async workloads? Use the Batch API
 
-Asynchronous / batch inference is optimized for bulk jobs, utilises spare capacity and enjoys **significantly higher base limits **and **50% price discount**. Read more.
+Asynchronous / batch inference is optimized for bulk jobs, utilises spare capacity and enjoys **significantly higher base limits** and **50% price discount**. Read more.
