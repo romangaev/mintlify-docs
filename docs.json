@@ -28,7 +28,7 @@
               "essentials/inference",
               "essentials/images",
               "essentials/agents",
-              "essentials/billing"
+              "essentials/billing",
               "essentials/enterprise"
             ]
           }
