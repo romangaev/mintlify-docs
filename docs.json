@@ -29,7 +29,8 @@
               "essentials/images",
               "essentials/agents",
               "essentials/billing",
-              "essentials/enterprise"
+              "essentials/enterprise",
+              "essentials/rate-limits"
             ]
           }
         ]
