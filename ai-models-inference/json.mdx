@@ -1,23 +1,25 @@
 ---
 title: "Structured output & JSON"
-description: "Description of your new file."
+description: "Learn how to get structured output from our text models"
 sidebarTitle: "Structured output & JSON"
 icon: "brackets-curly"
 ---
 
-By default, a [text generation model](https://docs.nebius.com/studio/inference/models/text-to-text) responds to your requests with a text in natural language. When you send a message to the model using the [Nebius AI Studio API](https://studio.nebius.com/api-reference), you can ask it to respond with JSON instead, which you can pass on to your application.
+By default, a text generation model responds to your requests with a text in natural language. You can also force the model to respond with JSON instead, which makes it easier to work with outputs programmatically in your application.
 
-> For example, you can tell a model the name of an actor or actress and get a response with details of a film they have starred in, in a format like this:
->
-> ```
-> {
->   "title": "The Shining",
->   "year": 1980,
->   "director": "Stanley Kubrick",
->   "cast": ["Jack Nicholson", "Shelley Duvall", "Danny Lloyd"],
->   "genre": "horror"
-> }
-> 
-> ```
+For example, you can tell a model the name of an actor or actress and get a response with details of a film they have starred in, in a format like this:
 
-Depending on the settings in your request, the response can be [guided JSON](https://docs.nebius.com/studio/inference/json#structured-output) (JSON that follows your schema) or [unguided JSON](https://docs.nebius.com/studio/inference/json#basic-json) (JSON that isn't guaranteed to follow any schema).
+```json
+{
+  "title": "The Shining",
+  "year": 1980,
+  "director": "Stanley Kubrick",
+  "cast": ["Jack Nicholson", "Shelley Duvall", "Danny Lloyd"],
+  "genre": "horror"
+}
+```
+
+Depending on the settings in your request, the response can be:
+
+- JSON schema. Follows the specific schema you provide `{"type": "json_schema"}` as `response_format`
+- JSON object. Forces arbitrary JSON output, the model will decide on the schema by itself `{"type": "json_object"}` as `response_format`
