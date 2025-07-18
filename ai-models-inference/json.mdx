@@ -4,3 +4,452 @@ description: "Description of your new file."
 sidebarTitle: "Structured output & JSON"
 icon: "brackets-curly"
 ---
+
+# Getting JSON output in {{ service.studio.name }}
+
+By default, a [text generation model](models/text-to-text.md) responds to your requests with a text in natural language. When you send a message to the model using the [{{ service.studio.name }} API]({{ service.studio.api-reference }}), you can ask it to respond with JSON instead, which you can pass on to your application.
+
+> For example, you can tell a model the name of an actor or actress and get a response with details of a film they have starred in, in a format like this:
+> 
+> ```json
+> {
+>   "title": "The Shining",
+>   "year": 1980,
+>   "director": "Stanley Kubrick",
+>   "cast": ["Jack Nicholson", "Shelley Duvall", "Danny Lloyd"],
+>   "genre": "horror"
+> }
+> ```
+
+Depending on the settings in your request, the response can be [guided JSON](#structured-output) (JSON that follows your schema) or [unguided JSON](#basic-json) (JSON that isn't guaranteed to follow any schema).
+
+
+## Guided JSON {#guided-json}
+
+_Guided JSON_ is JSON that follows a schema provided in your request.
+
+To get guided JSON as output:
+
+{% list tabs group=languages %}
+
+- Python
+
+  Define a schema for the response (the example uses [Pydantic](https://docs.pydantic.dev/latest/)) and pass it to `OpenAI.chat.completions.create()` in the `extra_body.guided_json` argument. For details, see the code below and follow the comments in it:
+
+  ```python
+  import os
+  import json
+  from openai import OpenAI
+  from typing import List, Literal
+  from pydantic import BaseModel
+
+  # 1. Define a schema using Pydantic's `BaseModel`. You can also define 
+  # a JSON Schema directly; see details after this code example
+
+  class Film(BaseModel):
+    title: str
+    year: int
+    director: str
+    cast: List[str]
+    genre: Literal[
+        "drama", "thriller", "sci-fi",
+        "comedy", "horror", "fantasy"
+    ]
+
+  # 2. Add the schema to your request (`extra_body.guided_json`)
+
+  client = OpenAI(
+      base_url="{{ service.studio.inference.api-endpoint }}/",
+      api_key=os.environ.get("NEBIUS_API_KEY"),
+  )
+
+  completion = client.chat.completions.create(
+      model="mistralai/Mistral-Nemo-Instruct-2407",
+      messages=[
+          {
+              "role": "system",
+              "content": (
+                  "I will give you an actor or actress, and you will respond "
+                  "with details of a real film they have starred in, according "
+                  "to the provided structure."
+              )
+          },
+          {
+              "role": "user",
+              "content": "Jack Nicholson"
+          }
+      ],
+      extra_body={
+          "guided_json": Film.model_json_schema()
+      }
+  )
+
+  # 3. Work with the JSON output or a refusal
+
+  output = completion.choices[0].message
+  if output.refusal:
+      # Handle refusal
+      print(output.refusal)
+  elif output.content:
+      try:
+          output_json = json.loads(output.content)
+          print(output_json)
+          print("Film: {} ({})".format(output_json['title'], 
+                                       output_json['year']))
+          # etc.
+      except Exception as e:
+          # Handle possible exceptions, e.g. invalid JSON
+          print(e)
+          pass
+  ```
+
+  {% cut "JSON Schema instead of Pydantic" %}
+
+  Instead of using Pydantic's `BaseModel`, you can define a [JSON Schema](https://json-schema.org/docs) directly:
+
+  ```python
+  schema = {
+      "type": "object",
+      "properties": {
+          "title": {"type": "string"},
+          "year": {"type": "integer"},
+          "director": {"type": "string"},
+          "cast": {
+              "type": "array",
+              "items": {"type": "string"}
+          },
+          "genre": {
+              "enum": [
+                  "drama", "thriller", "sci-fi",
+                  "comedy", "horror", "fantasy"
+              ]
+          }
+      },
+      "required": ["title", "year", "director", "cast", "genre"]
+  }
+  ```
+
+  The argument for `OpenAI.chat.completions.create()` would then be `extra_body={"guided_json": schema}`.
+
+  {% endcut %}
+
+- cURL
+
+  Define a [JSON Schema](https://json-schema.org/docs) for the output and pass it in the `guided_json` field of the [v1/chat/completions request body](api.md#chat-completions). For details, see the code below and follow the comments in it:
+
+  ```bash
+  # 1. Define a JSON Schema
+
+  export SCHEMA='
+  {
+    "type": "object",
+    "properties": {
+      "title": {"type": "string"},
+      "year": {"type": "integer"},
+      "director": {"type": "string"},
+      "cast": {
+        "type": "array",
+        "items": {"type": "string"}
+      },
+      "genre": {
+        "enum": [
+          "drama", "thriller", "sci-fi",
+          "comedy", "horror", "fantasy"
+        ]
+      }
+    },
+    "required": ["title", "year", "director", "cast", "genre"]
+  }
+  '
+
+  # 2. Add the schema to your request (`guided_json`)
+
+  export OUTPUT=$(curl '{{ service.studio.inference.api-endpoint }}/chat/completions' \
+    -X 'POST' \
+    -H 'Content-Type: application/json' \
+    -H 'Accept: */*' \
+    -H "Authorization: Bearer $NEBIUS_API_KEY" \
+    --data-binary '
+      {
+        "model": "mistralai/Mistral-Nemo-Instruct-2407",
+        "messages": [
+          {
+            "role": "system",
+            "content": "I will give you an actor or actress, and you will respond with details of a real film they have starred in, according to the provided structure."
+
+          },
+          {
+            "role": "user",
+            "content": "Jack Nicholson"
+          }
+        ],
+        "guided_json": '"$SCHEMA"'
+      }
+    '
+  )
+
+  # 3. Work with the JSON output or a refusal
+
+  echo $OUTPUT | jq '
+    .choices[0].message.refusal
+    // (.choices[0].message.content | fromjson | .title)
+  '
+  ```
+
+- JavaScript
+
+  Define a schema for the output (the example uses [Zod](https://zod.dev/) and [OpenAI's helper for it](https://github.com/openai/openai-node/blob/master/helpers.md)) and pass it to `OpenAI.chat.completions.create()` in the `extra_body.guided_json` argument. For details, see the code below and follow the comments in it:
+
+  ```javascript
+  import OpenAI from "openai";
+  import { z } from "zod";
+  import { zodResponseFormat } from "openai/helpers/zod";
+
+  // 1. Define a schema using Zod. You can also define a JSON Schema directly;
+  // see details after this code example
+
+  const Film = z.object({
+    title: z.string(),
+    year: z.number(),
+    director: z.string(),
+    cast: z.array(z.string()),
+    genre: z.enum(["drama", "thriller", "sci-fi", "comedy", "horror", "fantasy"]),
+  });
+
+  // 2. Add the schema to your request (`extra_body.guided_json`)
+
+  const client = new OpenAI({
+    baseURL: "{{ service.studio.inference.api-endpoint }}/",
+    apiKey: process.env.NEBIUS_API_KEY,
+  });
+
+  client.chat.completions.create({
+    model: "mistralai/Mistral-Nemo-Instruct-2407",
+    messages: [
+      {
+        role: "system",
+        content: "I will give you an actor or actress, and you will respond with details of a real film they have starred in, according to the provided structure.",
+      },
+      {
+        role: "user",
+        content: "Jack Nicholson",
+      },
+    ],
+    extra_body: {
+      guided_json: zodResponseFormat(Film, "film").json_schema.schema,
+    },
+  })
+  // 3. Work with the JSON output or a refusal
+  .then((completion) => {
+    const output = completion.choices[0].message;
+    if (output.refusal) {
+      // Handle refusal
+      console.log(output.refusal);
+    } else if (output.content) {
+      try {
+        const output_json = JSON.parse(output.content);
+        console.log(`Film: ${output_json.title} (${output_json.year})`);
+        // etc.
+      } catch (e) {
+      // Handle possible exceptions, e.g. invalid JSON
+      console.log("An error occurred: ", e.message);
+      }
+    }
+  });
+  ```
+
+  {% cut "JSON Schema instead of Zod" %}
+
+  Instead of using Zod and OpenAI's helper for it, you can define a [JSON Schema](https://json-schema.org/docs) directly:
+
+  ```javascript
+  const schema = {
+    type: "object",
+    properties: {
+      title: {type: "string"},
+      year: {type: "integer"},
+      director: {type: "string"},
+      cast: {
+        type: "array",
+        items: {type: "string"},
+      },
+      genre: {
+        enum: [
+          "drama", "thriller", "sci-fi",
+          "comedy", "horror", "fantasy"
+        ]
+      },
+    },
+    required: ["title", "year", "director", "cast", "genre"],
+  };
+  ```
+
+  The argument for `OpenAI.chat.completions.create()` would then be `extra_body: {guided_json: schema}`.
+
+  {% endcut %}
+
+{% endlist %}
+
+
+## Unguided JSON {#basic-json}
+
+_Unguided JSON_ is valid JSON that is not guaranteed to follow any schema. It is a simplified version of guided JSON.
+
+{% note tip %}
+
+Use guided JSON instead of unguided JSON whenever possible.
+
+{% endnote %}
+
+To get unguided JSON in response to your request:
+
+{% list tabs group=languages %}
+
+- Python
+
+  Instruct the model to produce JSON, either in the system prompt or in a user message, and pass `response_format={"type": "json_object"}` to `OpenAI.chat.completions.create()`. For details, see the code below and follow the comments in it:
+
+  ```python
+  import os
+  import json
+  from openai import OpenAI
+
+  client = OpenAI(
+      base_url="{{ service.studio.inference.api-endpoint }}/",
+      api_key=os.environ.get("NEBIUS_API_KEY"),
+  )
+
+  completion = client.chat.completions.create(
+      model="mistralai/Mistral-Nemo-Instruct-2407",
+      # 1. Instruct the model to produce JSON. In this example, we do it 
+      # in the system prompt; you can do it in a user message instead
+      messages=[
+          {
+              "role": "system",
+              "content": (
+                  "I will give you an actor or actress, and you will respond "
+                  "with details of a real film they have starred in, using JSON "
+                  "as the format."
+              )
+          },
+          {
+              "role": "user",
+              "content": "Jack Nicholson"
+          }
+      ],
+      # 2. Set the response format to `json_object`
+      response_format={
+          "type": "json_object"
+      }
+  )
+
+  # 3. Work with the JSON output (it should be valid but is not guaranteed 
+  # to have any predetermined fields) or a refusal
+
+  output = completion.choices[0].message
+  if output.refusal:
+      # Handle refusal
+      print(output.refusal)
+  elif output.content:
+      try:
+          output_json = json.loads(output.content)
+          print(output_json)
+      except Exception as e:
+          # Handle possible exceptions, e.g. invalid JSON
+          print(e)
+          pass
+  ```
+
+- cURL
+
+  In a [v1/chat/completions request](api.md#chat-completions), instruct the model to produce JSON, either in the system prompt or a user message, and add `"response_format": {"type": "json_object"}` to the body. For details, see the code below and follow the comments in it:
+
+  ```bash
+   # 1. Instruct the model to produce JSON. In this example, we do it in the system prompt; 
+   # you can do it in a user message instead
+   # 2. Set the response format to `json_object`
+  export OUTPUT=$(curl '{{ service.studio.inference.api-endpoint }}/chat/completions' \
+    -X 'POST' \
+    -H 'Content-Type: application/json' \
+    -H 'Accept: */*' \
+    -H "Authorization: Bearer $NEBIUS_API_KEY" \
+    --data-binary '
+      {
+        "model": "mistralai/Mistral-Nemo-Instruct-2407",
+        "messages": [
+          {
+            "role": "system",
+            "content": "I will give you an actor or actress, and you will respond with details of a real film they have starred in, using JSON as the format."
+          },
+          {
+            "role": "user",
+            "content": "Jack Nicholson"
+          }
+        ],
+        "response_format": {
+          "type": "json_object"
+        }
+      }
+    '
+  )
+
+  # 3. Work with the JSON output (it should be valid but is not guaranteed 
+  # to have any predetermined fields) or a refusal
+
+  echo $OUTPUT | jq '
+    .choices[0].message.refusal 
+    // (.choices[0].message.content | fromjson)
+  '
+  ```
+
+- JavaScript
+
+  Instruct the model to produce JSON, either in the system prompt or a user message, and pass `response_format: {type: "json_object"}` to `OpenAI.chat.completions.create()`. For details, see the code below and follow the comments in it:
+
+  ```javascript
+  import OpenAI from 'openai';
+
+  const client = new OpenAI({
+    baseURL: '{{ service.studio.inference.api-endpoint }}/',
+    apiKey: process.env.NEBIUS_API_KEY,
+  });
+
+  client.chat.completions.create({
+    model: "mistralai/Mistral-Nemo-Instruct-2407",
+    // 1. Instruct the model to produce JSON. In this example, we do it in the system prompt; 
+    // you can do it in a user message instead
+    messages: [
+      {
+        role: "system",
+        content: "I will give you an actor or actress, and you will respond with details of a real film they have starred in, using JSON as the format.",
+      },
+      {
+        role: "user",
+        content: "Jack Nicholson",
+      },
+    ],
+    // 2. Set the response format to `json_object`
+    response_format: {
+      type: "json_object",
+    },
+  })
+  // 3. Work with the JSON output (it should be valid but is not guaranteed 
+  // to have any predetermined fields) or a refusal
+  .then((completion) => {
+    const output = completion.choices[0].message;
+    if (output.refusal) {
+      // Handle refusal
+      console.log(output.refusal);
+    } else if (output.content) {
+      try {
+        const output_json = JSON.parse(output.content);
+        console.log(output_json);
+      } catch (e) {
+      // Handle possible exceptions, e.g. invalid JSON
+      console.log("An error occurred: ", e.message);
+      }
+    }
+  });
+  ```
+
+{% endlist %}
