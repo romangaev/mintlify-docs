@@ -22,8 +22,9 @@
             ]
           },
           {
-            "group": "Core services",
+            "group": "AI models inference",
             "pages": [
+              "ai-models-inference/json",
               "essentials/finetuning",
               "essentials/inference",
               "essentials/images",
