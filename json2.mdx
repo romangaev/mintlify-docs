@@ -4,28 +4,28 @@ import TabItem from '@theme/TabItem';
 # Getting JSON output in {{ service.studio.name }}
 
 By default, a [text generation model](models/text-to-text.md) responds to your requests with natural‑language text.  
-When you send a message to the model using the [{{ service.studio.name }} API]({{ service.studio.api-reference }}), you can ask it to respond with **JSON** instead and pass that straight to your application.
+When you send a message to the model using the [{{ service.studio.name }} API]({{ service.studio.api-reference }}), you can ask it to respond with **JSON** instead and pass that straight to your application.
 
 > For example, you can give a model the name of an actor or actress and get back details of a film they have starred in, like this:
 >
 > ```json
 > {
->   "title": "The Shining",
+>   "title": "The Shining",
 >   "year": 1980,
->   "director": "Stanley Kubrick",
->   "cast": ["Jack Nicholson", "Shelley Duvall", "Danny Lloyd"],
+>   "director": "Stanley Kubrick",
+>   "cast": ["Jack Nicholson", "Shelley Duvall", "Danny Lloyd"],
 >   "genre": "horror"
 > }
 > ```
 
-Depending on your request settings, the response can be **[guided JSON](#guided-json)** (follows a schema you provide) or **[unguided JSON](#basic-json)** (valid JSON, but the shape is not enforced).
+Depending on your request settings, the response can be **[guided JSON](#guided-json)** (follows a schema you provide) or **[unguided JSON](#basic-json)** (valid JSON, but the shape is not enforced).
 
 ---
 
 <a id="guided-json"></a>
-## Guided JSON
+## Guided JSON
 
-_Guided JSON_ is JSON that **must** follow a schema included in your request.
+_Guided JSON_ is JSON that **must** follow a schema included in your request.
 
 To receive guided JSON:
 
@@ -42,7 +42,7 @@ from openai import OpenAI
 from typing import List, Literal
 from pydantic import BaseModel
 
-# 1  Define the response schema
+# 1  Define the response schema
 class Film(BaseModel):
     title: str
     year: int
@@ -53,7 +53,7 @@ class Film(BaseModel):
         "comedy", "horror", "fantasy"
     ]
 
-# 2  Add the schema to your request
+# 2  Add the schema to your request
 client = OpenAI(
     base_url="{{ service.studio.inference.api-endpoint }}/",
     api_key=os.environ["NEBIUS_API_KEY"],
@@ -66,12 +66,12 @@ completion = client.chat.completions.create(
          "content": "I will give you an actor or actress, and you will respond "
                     "with details of a real film they have starred in, "
                     "according to the provided structure."},
-        {"role": "user", "content": "Jack Nicholson"}
+        {"role": "user", "content": "Jack Nicholson"}
     ],
     extra_body={"guided_json": Film.model_json_schema()}
 )
 
-# 3  Work with the JSON (or handle a refusal)
+# 3  Work with the JSON (or handle a refusal)
 msg = completion.choices[0].message
 if msg.refusal:
     print(msg.refusal)
@@ -81,3 +81,6 @@ elif msg.content:
         print(f"Film: {film['title']} ({film['year']})")
     except Exception as err:
         print("Invalid JSON:", err)
+```
+</TabItem>
+</Tabs>
