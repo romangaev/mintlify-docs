@@ -28,8 +28,9 @@
               "essentials/inference",
               "essentials/images",
               "essentials/agents",
-              "essentials/billing"
-              "essentials/enterprise"
+              "essentials/billing",
+              "essentials/enterprise",
+              "essentials/rate-limits"
             ]
           }
         ]
