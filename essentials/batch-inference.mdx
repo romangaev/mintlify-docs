@@ -1,0 +1,177 @@
+---
+description: "Batch inference is ideal for handling jobs that do not require an immediate response."
+title: "Batch inference"
+---
+
+<sup>Requests sent in batches cost 50% less than regular requests to base models. The price of batch inference does not depend on the </sup>[<sup>model flavor</sup>](https://docs.nebius.com/studio/inference/models/#model-flavors)<sup> that you use. For more information, see the </sup>[<sup>price list</sup>](https://nebius.com/prices-ai-studio)<sup>.</sup>
+
+Batch inference does not consume tokens from per-model [rate limits](https://docs.nebius.com/studio/inference/rate-limits).
+
+All batch requests are processed asynchronously, with most completed within 24 hours.
+
+## **Prepare a batch file**
+
+Prepare a file with JSON lines (JSONL), with each line representing a request to a single model through the [API](https://studio.nebius.com/api-reference). We will use `batch-requests.jsonl` as an example.
+
+The file contents format:
+
+```json
+{"custom_id": "request-1", "method": "POST", "url": "/v1/chat/completions", "body": {"model": "meta-llama/Meta-Llama-3.1-70B-Instruct", "messages": [{"role": "system", "content": "You are a chemistry expert."},{"role": "user", "content": "Hello!"}],"max_tokens": 1000}}
+{"custom_id": "request-2", "method": "POST", "url": "/v1/chat/completions", "body": {"model": "meta-llama/Meta-Llama-3.1-70B-Instruct", "messages": [{"role": "system", "content": "You are a chemistry expert. Add jokes about cats to your responses from time to time."},{"role": "user", "content": "Hello!"}],"max_tokens": 1000}}
+```
+
+Where:
+
+- `custom_id`: Unique ID to refer to the inference results.
+- `url`: API endpoint. Available endpoints are `/v1/chat/completions` and `/v1/embeddings`.
+- `body.model`: [Model ID](https://docs.nebius.com/studio/inference/models/#model-list). The ID should be the same across the file.
+
+The file constraints:
+
+- Up to 5,000,000 requests.
+- Up to 10 GB in size.
+
+## **Upload the file**
+
+Before uploading the file, check that your [API key](https://docs.nebius.com/studio/api/authentication) is saved to the `NEBIUS_API_KEY` environment variable.
+
+```python
+import os
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://api.studio.nebius.com/v1/",
+    api_key=os.environ.get("NEBIUS_API_KEY"),
+)
+
+batch_requests = client.files.create(
+    file=open("batch-requests.jsonl", "rb"),
+    purpose="batch"
+)
+```
+
+You'll receive a response with a file ID:
+
+```json
+{
+  "id": "file-123",
+  "object": "file",
+  "bytes": 120000,
+  "created_at": 1730723658,
+  "filename": "batch-requests.jsonl",
+  "purpose": "batch"
+}
+```
+
+## **Create a batch**
+
+You can create up to 500 batches.
+
+```python
+client.batches.create(
+    input_file_id=batch_requests.id,
+    endpoint="/v1/chat/completions",
+    completion_window="24h",
+    metadata={
+        "description": "Asynchronous job"
+    }
+)
+```
+
+Where:
+
+- `endpoint`: Endpoint matching the one from your JSONL file.
+- `completion_window`: Time period within the batch will be processed. We support only `24h` completion window.
+
+You'll receive a response with your batch ID and status:
+
+```json
+{
+  "id": "batch_123",
+  "object": "batch",
+  "endpoint": "/v1/chat/completions",
+  "errors": null,
+  "input_file_id": "file-123",
+  "completion_window": "24h",
+  "status": "validating",
+  "output_file_id": null,
+  "error_file_id": null,
+  "created_at": 1730723835,
+  "in_progress_at": null,
+  "expires_at": 1730810235,
+  "completed_at": null,
+  "failed_at": null,
+  "expired_at": null,
+  "request_counts": {
+    "total": 0,
+    "completed": 0,
+    "failed": 0
+  },
+  "metadata": {
+    "customer_id": "user_123",
+    "batch_description": "Asynchronous job"
+  }
+}
+```
+
+## **Get the batch status**
+
+A batch can be completed sooner than in 24 hours. To check the completion status, refer to the batch API.
+
+```python
+import os
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://api.studio.nebius.com/v1/",
+    api_key=os.environ.get("NEBIUS_API_KEY"),
+)
+
+client.batches.retrieve("batch_123")
+```
+
+## **Get the results**
+
+When the batch status changes to `done`, copy the `output_file_id` from the response and download the file with the results from the files API.
+
+```python
+batch_result = client.files.content("file-123")
+print(batch_result.text)
+```
+
+Output example:
+
+```json
+{"id": "batch_req_123", "custom_id": "request-2", "response": {"id": "chatcmpl-123", "choices": [{"finish_reason": "stop", "index": 0, "logprobs": null, "message": {"content": "Hello! It's a purr-fect day to talk about chemistry, don't you think? I'm excited to help you with any questions or topics you'd like to discuss. Just remember, in chemistry, we're always trying to bond with each other... just like cats bond with their favorite scratching posts! What's on your mind?", "refusal": null, "role": "assistant", "audio": null, "function_call": null, "tool_calls": [], "reasoning_content": null}, "stop_reason": null}], "created": 1748895844, "model": "meta-llama/Meta-Llama-3.1-70B-Instruct", "object": "chat.completion", "service_tier": null, "system_fingerprint": null, "usage": {"completion_tokens": 70, "prompt_tokens": 35, "total_tokens": 105, "completion_tokens_details": null, "prompt_tokens_details": null}, "prompt_logprobs": null}, "error": null}
+{"id": "batch_req_456", "custom_id": "request-1", "response": {"id": "chatcmpl-456", "choices": [{"finish_reason": "stop", "index": 0, "logprobs": null, "message": {"content": "Hello! I'm excited to chat with you about chemistry. What's on your mind? Do you have a specific question about a chemical reaction, a concept you're struggling with, or perhaps a topic you'd like to explore? I'm here to help and share my knowledge with you. Let's get started!", "refusal": null, "role": "assistant", "audio": null, "function_call": null, "tool_calls": [], "reasoning_content": null}, "stop_reason": null}], "created": 1748895844, "model": "meta-llama/Meta-Llama-3.1-70B-Instruct", "object": "chat.completion", "service_tier": null, "system_fingerprint": null, "usage": {"completion_tokens": 64, "prompt_tokens": 23, "total_tokens": 87, "completion_tokens_details": null, "prompt_tokens_details": null}, "prompt_logprobs": null}, "error": null}
+```
+
+The file with the results consists of lines with successful requests. The line order might not be the same as in the input file. To map the input and output files, use the `custom_id` of the corresponding lines.
+
+To view unsuccessful requests, get your batch status, copy the `error_file_id` from the response and download the file with the failed requests lines.
+
+## **Cancel a batch**
+
+To cancel the outgoing batch, use the batch API.
+
+```python
+client.batches.cancel("batch_123")
+```
+
+You'll receive a response with the `cancelling` status and the number of completed and failed requests.
+
+## **Delete a batch file**
+
+You can have up to 500 batch files. If you are approaching this limit, consider deleting any unnecessary files using the files API:
+
+```python
+import os
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://api.studio.nebius.com/v1/",
+    api_key=os.environ.get("NEBIUS_API_KEY"),
+)
+
+client.files.delete("file_123")
+```
