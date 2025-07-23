@@ -1,0 +1,118 @@
+---
+title: "Billing in Nebius AI Studio"
+description: "How to pay for resources"
+mode: "wide"
+---
+
+import ServiceName from '/snippets/service-name.mdx';
+import UiUrl from '/snippets/ui-url.mdx';
+
+When you start using <ServiceName/>, you are granted some initial credits. They are sufficient for exploring the service, but you may need to add funds for heavy workloads.
+
+You can top up your balance in two ways:
+
+* Pay with a bank card
+* Apply a promo code
+
+Your account balance is displayed in the navigation menu. Make sure the balance is positive; if it is negative, the [API](<UiUrl/>/api-reference) returns errors in response to your requests.
+
+## Paying with a bank card
+
+You can pay with a bank card when you notice that the balance is insufficient, or set up automatic payments.
+
+<ServiceName/> uses [Stripe](https://stripe.com/) to process payments. For more information on accepted card types, see the [Stripe documentation](https://docs.stripe.com/payments/cards).
+
+### How to add billing information
+
+When you pay for the first time, add your billing information:
+
+1. In the navigation menu, click your balance.
+1. Click <Icon icon="circle-plus" iconType="solid" /> **Top up**.
+1. Specify the required information:
+
+   * Email address
+   * Your name
+   * Country of residence or country where your company is registered
+   * Billing address
+
+1. Select whether you want to pay as an individual or on behalf of a company.
+1. If you select to pay on behalf of a company, specify the company information:
+
+   * Tax ID (VAT number)
+   * Company name
+   * Postal code
+
+1. Click **Save account details**.
+
+### How to pay with a bank card
+
+To top up your balance by using a bank card, do the following:
+
+1. In the navigation menu, click your balance.
+1. Click <Icon icon="circle-plus" iconType="solid" /> **Top up**.
+1. If you are paying for the first time, provide your billing information as described above.
+1. Enter the top-up amount, and add or check the card details. <ServiceName/> may apply taxes depending on your country of residence and account type. For more information, see the tax calculation details below.
+1. Click **Top up**.
+
+<ServiceName/> saves the card used for the first payment and will use it for future payments.
+
+### How to configure automatic top-ups
+
+To keep your balance positive, enable automatic top-ups:
+
+1. In the navigation menu, click your balance.
+1. Click <Icon icon="circle-plus" iconType="solid" /> **Top up**.
+1. Click **Setup auto top-up**.
+1. Enable the automatic top-up option and specify its settings:
+
+   * Threshold: Balance value that triggers a top-up. For example, enter `10` to trigger a top-up every time your balance reaches \$10.
+   * Amount to add.
+   * Card details, if not provided already.
+
+1. Click **Save auto top-up settings**.
+
+### How to change the card
+
+To update your payment card, do the following:
+
+1. In the navigation menu, click your balance.
+1. Go to [Billing details](<UiUrl/>/billing/details).
+1. In the **Payment details** section, next to your current card, <Icon icon="pencil" iconType="solid" /> → **Edit**.
+1. Enter the details of the new card.
+
+If you enabled automatic top-ups, your new card will be used for them as well.
+
+### How taxes are calculated
+
+Depending on your location or your company location, <ServiceName/> may apply taxes such as Value Added Tax (VAT).
+
+| Residence | Tax for individuals | Tax for companies |
+| --- | --- | --- |
+| The Netherlands | 21% | 21% |
+| Rest of EU | According to your country tax law | No tax |
+| United States | No tax | No tax |
+| Rest of world | No tax | No tax |
+
+## Applying a promo code
+
+A promo code grants you free <ServiceName/> credits. You can receive a promo code from Nebius as part of a special offer.
+
+You can apply a promo code even if you have not added billing information or a bank card.
+
+To apply a promo code if billing is not configured, do the following:
+
+1. In the navigation menu, click your balance.
+1. Click <Icon icon="circle-plus" iconType="solid" /> **Top up**.
+1. Click **Apply promo code**.
+1. Enter your promo code and click **Apply promo code**.
+
+To apply a promo code in a configured billing account, do the following:
+
+1. In the navigation menu, click your balance.
+1. Click <Icon icon="circle-plus" iconType="solid" /> **Top up**.
+1. Select **With promo code**.
+1. Enter your promo code and click **Top up**.
+
+Once your promo code is applied, your balance increases by the corresponding amount.
+
+To verify that the promo code is applied, check the [Payments](<UiUrl/>/billing) section.
