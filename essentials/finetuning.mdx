@@ -1,88 +1,285 @@
 ---
 title: "Finetuning"
-description: "Text, title, and styling in standard markdown"
+description: "You can fine-tune a generic model to adjust it to domain-specific tasks. By using fine-tuning in Nebius AI Studio, you can also save costs on training a model: using datasets costs cheaper than using numerous prompts."
 icon: "layer-group"
 ---
 
-## Titles
+## **Prerequisites**
 
-Best used for section headers.
+1. Choose one of the [models](https://docs.nebius.com/studio/fine-tuning/models) supported for [fine-tuning](https://docs.nebius.com/studio/fine-tuning).
+2. Create a [dataset](https://docs.nebius.com/studio/fine-tuning/datasets) for training.
 
-```md
-## Titles
-```
+   You can optionally create an additional dataset for validation. Split the data between two datasets as 80–90% for training and 10–20% for validation. Requirements for validation datasets are the same as for training datasets.
+3. [Create an API key](https://docs.nebius.com/studio/api/authentication) for authentication.
+4. Save the API key to an environment variable:
 
-### Subtitles
+`export NEBIUS_API_KEY=<API_key>`
 
-Best used for subsection headers.
+## **How to fine-tune a model**
 
-```md
-### Subtitles
-```
+`pip3 install openai`
 
-<Tip>
-  Each **title** and **subtitle** creates an anchor and also shows up on the table of contents on the right.
-</Tip>
+`import os`
 
-## Text Formatting
+`from openai import OpenAI`
 
-We support most markdown formatting. Simply add `**`, `_`, or `~` around text to format it.
+`import time`
 
-| Style         | How to write it   | Result            |
-| ------------- | ----------------- | ----------------- |
-| Bold          | `**bold**`        | **bold**          |
-| Italic        | `_italic_`        | _italic_          |
-| Strikethrough | `~strikethrough~` | ~~strikethrough~~ |
+`client = OpenAI(`
 
-You can combine these. For example, write `**_bold and italic_**` to get **_bold and italic_** text.
+`    base_url="https://api.studio.nebius.com/v1/",`
 
-You need to use HTML to write superscript and subscript text. That is, add `<sup>` or `<sub>` around your text.
+`    api_key=os.environ.get("NEBIUS_API_KEY"),`
 
-| Text Size   | How to write it          | Result                 |
-| ----------- | ------------------------ | ---------------------- |
-| Superscript | `<sup>superscript</sup>` | <sup>superscript</sup> |
-| Subscript   | `<sub>subscript</sub>`   | <sub>subscript</sub>   |
+`)`
 
-## Linking to Pages
+`# Upload a training dataset`
 
-You can add a link by wrapping text in `[]()`. You would write `[link to google](https://google.com)` to [link to google](https://google.com).
+`training_dataset = client.files.create(`
 
-Links to pages in your docs need to be root-relative. Basically, you should include the entire folder path. For example, `[link to text](/writing-content/text)` links to the page "Text" in our components section.
+`    file=open("<dataset_name>.jsonl", "rb"), # Specify the dataset name`
 
-Relative links like `[link to text](../text)` will open slower because we cannot optimize them as easily.
+`    purpose="fine-tune"`
 
-## Blockquotes
+`)`
 
-### Singleline
+`# Upload a validation dataset`
 
-To create a blockquote, add a `>` in front of a paragraph.
+`validation_dataset = client.files.create(`
 
-> Dorothy followed her through many of the beautiful rooms in her castle.
+`    file=open("<dataset_name>.jsonl", "rb"), # Specify the dataset name`
 
-```md
-> Dorothy followed her through many of the beautiful rooms in her castle.
-```
+`    purpose="fine-tune"`
 
-### Multiline
+`)`
 
-> Dorothy followed her through many of the beautiful rooms in her castle.
->
-> The Witch bade her clean the pots and kettles and sweep the floor and keep the fire fed with wood.
+`# Fine-tuning job parameters`
 
-```md
-> Dorothy followed her through many of the beautiful rooms in her castle.
->
-> The Witch bade her clean the pots and kettles and sweep the floor and keep the fire fed with wood.
-```
+`job_request = {`
 
-### LaTeX
+`    "model": "<...>",`
 
-Mintlify supports [LaTeX](https://www.latex-project.org) through the Latex component.
+`    "training_file": training_dataset.id,`
 
-<Latex>
-  8 x (vk x H1 - H2) = (0,1)
-</Latex>
+`    "validation_file": validation_dataset.id,`
 
-```md
-<Latex>8 x (vk x H1 - H2) = (0,1)</Latex>
-```
+`    "hyperparameters": {`
+
+`        "batch_size": <...>,`
+
+`        "learning_rate": <...>,`
+
+`        "n_epochs": <...>,`
+
+`        "warmup_ratio": <...>,`
+
+`        "weight_decay": <...>,`
+
+`        "lora": <True|False>,`
+
+`        "lora_r": <...>,`
+
+`        "lora_alpha": <...>,`
+
+`        "lora_dropout": <...>,`
+
+`        "packing": <True|False>,`
+
+`        "max_grad_norm": <...>,`
+
+`    },`
+
+`    "integrations": [`
+
+`        {`
+
+`            "type": "wandb",`
+
+`            "wandb": {`
+
+`                "api_key": "<...>",`
+
+`                "project": "<...>",`
+
+`            },`
+
+`        },`
+
+`        {`
+
+`            "type": "mlflow",`
+
+`            "mlflow": {`
+
+`               "tracking_uri": "<...>",`
+
+`               "certificate_file": "<...>",`
+
+`               "username": "<...>",`
+
+`               "password": "<...>",`
+
+`               "experiment_name": "<...>",`
+
+`               "run_name": "<...>",`
+
+`            },`
+
+`         },`
+
+`    ],`
+
+`}`
+
+`# Create and run the fine-tuning job`
+
+`job = client.fine_tuning.jobs.create(**job_request)`
+
+`# Make sure that the job has been finished or cancelled`
+
+`active_statuses = ["validating_files", "queued", "running"]`
+
+`while job.status in active_statuses:`
+
+`    time.sleep(15)`
+
+`    job = client.fine_tuning.jobs.retrieve(job.id)`
+
+`    print("current status is", job.status)`
+
+`print("Job ID:", job.id)`
+
+`if job.status == "succeeded":`
+
+`    # Check the job events`
+
+`    events = client.fine_tuning.jobs.list_events(job.id)`
+
+`    print(events)`
+
+`    for checkpoint in client.fine_tuning.jobs.checkpoints.list(job.id).data:`
+
+`        print("Checkpoint ID:", checkpoint.id)`
+
+`        # Create a directory for every checkpoint`
+
+`        os.makedirs(checkpoint.id, exist_ok=True)`
+
+`        for model_file_id in checkpoint.result_files:`
+
+`            # Get the name of a model file`
+
+`            filename = client.files.retrieve(model_file_id).filename`
+
+`            # Retrieve the contents of the file`
+
+`            file_content = client.files.content(model_file_id)`
+
+`            # Save the contents into a local file`
+
+`            file_content.write_to_file(filename)`
+
+The script stages are the following:
+
+1. Uploads a training and a validation dataset. The validation dataset is optional.
+2. Creates a fine-tuning job.
+
+   For more information about the fine-tuning job parameters, see the specification of the [fine-tuning job object](https://docs.nebius.com/studio/fine-tuning/how-to-fine-tune#job-specs).
+3. Checks that the job status is `succeeded`.
+
+   The status of a freshly started job is `running`. The script polls the status periodically to make sure that the job status has changed to `succeeded`. The minimum time window between subsequent polls is 15 seconds.
+
+   If the status is `failed`, examine the output. It describes the error and how to fix it. If the error code is `500`, resubmit the job.
+4. Checks that the training has been successful. To do this, check the job events. They are created when the job status changes.
+
+   You can consider the training as finished if the response contains either the `Dataset processed successfully` or `Training completed successfully` message.
+5. Retrieves the contents of the files with the fine-tuned model.
+
+   You get the files for every fine-tuning checkpoint. A checkpoint is created after every epoch of training a model, so you get intermediate results of the training. If you need final results, use the files from the last checkpoint.
+6. Saves the contents to files. The script creates a directory per checkpoint and saves the files into these directories.
+
+Now, you can use these files to [host the fine-tuned model](https://docs.nebius.com/studio/fine-tuning/host-model) and work with it.
+
+## **API specification for a fine-tuning job**
+
+The object below represents the fine-tuning job specification used in the API.
+
+`{`
+
+`   "model": "<...>",`
+
+`   "suffix": "<...>",`
+
+`   "training_file": "<...>",`
+
+`   "validation_file": "<...>",`
+
+`   "hyperparameters": {`
+
+`      "batch_size": <...>,`
+
+`      "learning_rate": <...>,`
+
+`      "n_epochs": <...>,`
+
+`      "warmup_ratio": <...>,`
+
+`      "weight_decay": <...>,`
+
+`      "lora": <true|false>,`
+
+`      "lora_r": <...>,`
+
+`      "lora_alpha": <...>,`
+
+`      "lora_dropout": <...>,`
+
+`      "packing": <true|false>,`
+
+`      "max_grad_norm": <...>`
+
+`   },`
+
+`   "seed": <...>,`
+
+`   "integrations": [`
+
+`      {`
+
+`         "type": "wandb",`
+
+`         "wandb": {`
+
+`            "api_key": "<...>",`
+
+`            "project": "<...>"`
+
+`         }`
+
+`      },`
+
+`      {`
+
+`         "type": "mlflow",`
+
+`         "mlflow": {`
+
+`            "tracking_uri": "<...>",`
+
+`            "certificate_file": "<...>",`
+
+`            "username": "<...>",`
+
+`            "password": "<...>",`
+
+`            "experiment_name": "<...>",`
+
+`            "run_name": "<...>"`
+
+`         }`
+
+`      }`
+
+`   ]`
+
+`}`
