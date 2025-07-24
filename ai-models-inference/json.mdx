@@ -21,5 +21,214 @@ For example, you can tell a model the name of an actor or actress and get a resp
 
 Depending on the settings in your request, the response can be:
 
-- JSON schema. Follows the specific schema you provide `{"type": "json_schema"}` as `response_format`
-- JSON object. Forces arbitrary JSON output, the model will decide on the schema by itself `{"type": "json_object"}` as `response_format`
+- **JSON schema following.** Follows the specific schema you provide `{"type": "json_schema"}` as `response_format`
+- **Arbitrary JSON object.** Forces arbitrary JSON output, the model will decide on the schema by itself `{"type": "json_object"}` as `response_format`
+
+<Info>
+  **Supported models**\
+  Some models are better in providing JSON due to their training data or our inference engine limitations. Use `JSON mode` tag in on a model card to find a model with structured output supported.
+</Info>
+
+## JSON Schema following
+
+<CodeGroup>
+
+```python Python
+import os
+import json
+from openai import OpenAI
+from typing import List, Literal
+from pydantic import BaseModel
+
+# 1. Define a schema using Pydantic's `BaseModel`. You can also define 
+# a JSON Schema directly; see details after this code example
+
+class Film(BaseModel):
+  title: str
+  year: int
+  director: str
+  cast: List[str]
+  genre: Literal[
+      "drama", "thriller", "sci-fi",
+      "comedy", "horror", "fantasy"
+  ]
+
+# 2. Add the schema to your request (`extra_body.guided_json`)
+
+client = OpenAI(
+    base_url="https://api.studio.nebius.com/v1/",
+    api_key=os.environ.get("NEBIUS_API_KEY"),
+)
+
+completion = client.chat.completions.create(
+    model="Qwen/Qwen3-235B-A22B",
+	response_format={
+        	"type": "json_schema"
+			"json_schema": Film.model_json_schema()
+    	}
+    messages=[
+        {
+            "role": "system",
+            "content": (
+                "I will give you an actor or actress, and you will respond "
+                "with details of a real film they have starred in, according "
+                "to the provided structure."
+            )
+        },
+        {
+            "role": "user",
+            "content": "Jack Nicholson"
+        }
+    ],
+
+)
+
+# 3. Work with the JSON output or a refusal
+
+output = completion.choices[0].message
+if output.refusal:
+    # Handle refusal
+    print(output.refusal)
+elif output.content:
+    try:
+        output_json = json.loads(output.content)
+        print(output_json)
+        print("Film: {} ({})".format(output_json['title'], 
+                                     output_json['year']))
+        # etc.
+    except Exception as e:
+        # Handle possible exceptions, e.g. invalid JSON
+        print(e)
+        pass
+```
+
+
+```bash cURL
+# 1. Define a JSON Schema
+
+export SCHEMA='
+{
+  "type": "object",
+  "properties": {
+    "title": {"type": "string"},
+    "year": {"type": "integer"},
+    "director": {"type": "string"},
+    "cast": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "genre": {
+      "enum": [
+        "drama", "thriller", "sci-fi",
+        "comedy", "horror", "fantasy"
+      ]
+    }
+  },
+  "required": ["title", "year", "director", "cast", "genre"]
+}
+'
+
+# 2. Add the schema to your request (`guided_json`)
+
+export OUTPUT=$(curl 'https://api.studio.nebius.com/v1/chat/completions' \
+  -X 'POST' \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: */*' \
+  -H "Authorization: Bearer $NEBIUS_API_KEY" \
+  --data-binary '
+    {
+      "model": "mistralai/Mistral-Nemo-Instruct-2407",
+      "messages": [
+        {
+          "role": "system",
+          "content": "I will give you an actor or actress, and you will respond with details of a real film they have starred in, according to the provided structure."
+
+        },
+        {
+          "role": "user",
+          "content": "Jack Nicholson"
+        }
+      ],
+      "guided_json": '"$SCHEMA"'
+    }
+  '
+)
+
+# 3. Work with the JSON output or a refusal
+
+echo $OUTPUT | jq '
+  .choices[0].message.refusal
+  // (.choices[0].message.content | fromjson | .title)
+'
+```
+
+
+```javascript JavaScript
+import OpenAI from "openai";
+import { z } from "zod";
+import { zodResponseFormat } from "openai/helpers/zod";
+
+// 1. Define a schema using Zod. You can also define a JSON Schema directly;
+// see details after this code example
+
+const Film = z.object({
+  title: z.string(),
+  year: z.number(),
+  director: z.string(),
+  cast: z.array(z.string()),
+  genre: z.enum(["drama", "thriller", "sci-fi", "comedy", "horror", "fantasy"]),
+});
+
+// 2. Add the schema to your request (`extra_body.guided_json`)
+
+const client = new OpenAI({
+  baseURL: "https://api.studio.nebius.com/v1/",
+  apiKey: process.env.NEBIUS_API_KEY,
+});
+
+client.chat.completions.create({
+  model: "mistralai/Mistral-Nemo-Instruct-2407",
+  messages: [
+    {
+      role: "system",
+      content: "I will give you an actor or actress, and you will respond with details of a real film they have starred in, according to the provided structure.",
+    },
+    {
+      role: "user",
+      content: "Jack Nicholson",
+    },
+  ],
+  extra_body: {
+    guided_json: zodResponseFormat(Film, "film").json_schema.schema,
+  },
+})
+// 3. Work with the JSON output or a refusal
+.then((completion) => {
+  const output = completion.choices[0].message;
+  if (output.refusal) {
+    // Handle refusal
+    console.log(output.refusal);
+  } else if (output.content) {
+    try {
+      const output_json = JSON.parse(output.content);
+      console.log(`Film: ${output_json.title} (${output_json.year})`);
+      // etc.
+    } catch (e) {
+    // Handle possible exceptions, e.g. invalid JSON
+    console.log("An error occurred: ", e.message);
+    }
+  }
+});
+```
+
+</CodeGroup>
+
+## Arbitrary JSON object
+
+## Cookbooks & Code Examples
+
+<Card title="Strucrured output - Cookbook" icon="github" iconType="regular" color="#000000" href="https://github.com/nebius/ai-studio-cookbook/blob/main/guided_json.ipynb">
+  
+</Card>
+
+## Structured output in Playground
