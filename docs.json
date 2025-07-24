@@ -24,11 +24,20 @@
           {
             "group": "AI models inference",
             "pages": [
+              "ai-models-inference/overview",
               "ai-models-inference/json",
-              "essentials/finetuning",
-              "essentials/inference",
-              "essentials/images",
-              "essentials/agents",
+              "ai-models-inference/batch-inference"
+            ]
+          },
+          {
+            "group": "Fine tuning",
+            "pages": [
+              "essentials/finetuning"
+            ]
+          },
+          {
+            "group": "Other capabilities",
+            "pages": [
               "essentials/billing",
               "essentials/enterprise",
               "essentials/rate-limits"
