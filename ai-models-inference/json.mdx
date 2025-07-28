@@ -5,6 +5,8 @@ sidebarTitle: "Structured output & JSON"
 icon: "brackets-curly"
 ---
 
+## Overview
+
 By default, a text generation model responds to your requests with a text in natural language. You can also force the model to respond with JSON instead, which makes it easier to work with outputs programmatically in your application.
 
 For example, you can tell a model the name of an actor or actress and get a response with details of a film they have starred in, in a format like this:
@@ -15,14 +17,13 @@ For example, you can tell a model the name of an actor or actress and get a resp
   "year": 1980,
   "director": "Stanley Kubrick",
   "cast": ["Jack Nicholson", "Shelley Duvall", "Danny Lloyd"],
-  "genre": "horror"
 }
 ```
 
-Depending on the settings in your request, the response can be:
+Use `response_format`parameter to get JSON output. Depending on the settings in your request, the response can be:
 
-- **JSON schema following.** Follows the specific schema you provide `{"type": "json_schema"}` as `response_format`
-- **Arbitrary JSON object.** Forces arbitrary JSON output, the model will decide on the schema by itself `{"type": "json_object"}` as `response_format`
+- **JSON schema following.** Follows the specific schema you provide - `{"type": "json_schema"}` in `response_format `parameter.
+- **Arbitrary JSON object.** Forces arbitrary JSON output, the model will decide on the schema by itself `{"type": "json_object"}` in `response_format `parameter.
 
 <Info>
   **Supported models**\
@@ -30,6 +31,12 @@ Depending on the settings in your request, the response can be:
 </Info>
 
 ## JSON Schema following
+
+JSON that follows a schema provided in your request. Make a request to the Nebius AI Studio API with `{"type": "json_schema"}` in `response_format `and provide desirable schema in a [JSON Schema Specification](https://json-schema.org/specification) compliant format.
+
+<Tip>
+  Many practical tests show that it's always better to provide the schema \*\*both in text prompt for the model and \*\*`"json_schema"`**parameter**
+</Tip>
 
 <CodeGroup>
 
@@ -53,7 +60,7 @@ class Film(BaseModel):
       "comedy", "horror", "fantasy"
   ]
 
-# 2. Add the schema to your request (`extra_body.guided_json`)
+# 2. Add the schema to your request
 
 client = OpenAI(
     base_url="https://api.studio.nebius.com/v1/",
@@ -128,7 +135,7 @@ export SCHEMA='
 }
 '
 
-# 2. Add the schema to your request (`guided_json`)
+# 2. Add the schema to your request
 
 export OUTPUT=$(curl 'https://api.studio.nebius.com/v1/chat/completions' \
   -X 'POST' \
@@ -149,7 +156,10 @@ export OUTPUT=$(curl 'https://api.studio.nebius.com/v1/chat/completions' \
           "content": "Jack Nicholson"
         }
       ],
-      "guided_json": '"$SCHEMA"'
+      "response format": {
+        	"type": "json_schema"
+			"json_schema": '"$SCHEMA"'
+    	}  
     }
   '
 )
@@ -179,7 +189,7 @@ const Film = z.object({
   genre: z.enum(["drama", "thriller", "sci-fi", "comedy", "horror", "fantasy"]),
 });
 
-// 2. Add the schema to your request (`extra_body.guided_json`)
+// 2. Add the schema to your request
 
 const client = new OpenAI({
   baseURL: "https://api.studio.nebius.com/v1/",
@@ -198,9 +208,10 @@ client.chat.completions.create({
       content: "Jack Nicholson",
     },
   ],
-  extra_body: {
-    guided_json: zodResponseFormat(Film, "film").json_schema.schema,
-  },
+ response_format={
+        	type: "json_schema"
+			json_schema: zodResponseFormat(Film, "film").json_schema.schema
+    	}
 })
 // 3. Work with the JSON output or a refusal
 .then((completion) => {
@@ -225,10 +236,160 @@ client.chat.completions.create({
 
 ## Arbitrary JSON object
 
+The model will produce a valid JSON object without following any specific schema.\
+Make a request to the Nebius AI Studio API with `{"type": "json_object"}` in `response_format`:
+
+<CodeGroup>
+
+```python Python
+import os
+import json
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://api.studio.nebius.com/v1/",
+    api_key=os.environ.get("NEBIUS_API_KEY"),
+)
+
+completion = client.chat.completions.create(
+    model="mistralai/Mistral-Nemo-Instruct-2407",
+    # 1. Instruct the model to produce JSON. In this example, we do it 
+    # in the system prompt; you can do it in a user message instead
+    messages=[
+        {
+            "role": "system",
+            "content": (
+                "I will give you an actor or actress, and you will respond "
+                "with details of a real film they have starred in, using JSON "
+                "as the format."
+            )
+        },
+        {
+            "role": "user",
+            "content": "Jack Nicholson"
+        }
+    ],
+    # 2. Set the response format to `json_object`
+    response_format={
+        "type": "json_object"
+    }
+)
+
+# 3. Work with the JSON output (it should be valid but is not guaranteed 
+# to have any predetermined fields) or a refusal
+
+output = completion.choices[0].message
+if output.refusal:
+    # Handle refusal
+    print(output.refusal)
+elif output.content:
+    try:
+        output_json = json.loads(output.content)
+        print(output_json)
+    except Exception as e:
+        # Handle possible exceptions, e.g. invalid JSON
+        print(e)
+        pass
+```
+
+
+```bash cURL
+ # 1. Instruct the model to produce JSON. In this example, we do it in the system prompt; 
+ # you can do it in a user message instead
+ # 2. Set the response format to `json_object`
+export OUTPUT=$(curl 'https://api.studio.nebius.com/v1/chat/completions' \
+  -X 'POST' \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: */*' \
+  -H "Authorization: Bearer $NEBIUS_API_KEY" \
+  --data-binary '
+    {
+      "model": "mistralai/Mistral-Nemo-Instruct-2407",
+      "messages": [
+        {
+          "role": "system",
+          "content": "I will give you an actor or actress, and you will respond with details of a real film they have starred in, using JSON as the format."
+        },
+        {
+          "role": "user",
+          "content": "Jack Nicholson"
+        }
+      ],
+      "response_format": {
+        "type": "json_object"
+      }
+    }
+  '
+)
+
+# 3. Work with the JSON output (it should be valid but is not guaranteed 
+# to have any predetermined fields) or a refusal
+
+echo $OUTPUT | jq '
+  .choices[0].message.refusal 
+  // (.choices[0].message.content | fromjson)
+'
+```
+
+
+```javascript JavaScript
+import OpenAI from 'openai';
+
+const client = new OpenAI({
+  baseURL: 'https://api.studio.nebius.com/v1/',
+  apiKey: process.env.NEBIUS_API_KEY,
+});
+
+client.chat.completions.create({
+  model: "mistralai/Mistral-Nemo-Instruct-2407",
+  // 1. Instruct the model to produce JSON. In this example, we do it in the system prompt; 
+  // you can do it in a user message instead
+  messages: [
+    {
+      role: "system",
+      content: "I will give you an actor or actress, and you will respond with details of a real film they have starred in, using JSON as the format.",
+    },
+    {
+      role: "user",
+      content: "Jack Nicholson",
+    },
+  ],
+  // 2. Set the response format to `json_object`
+  response_format: {
+    type: "json_object",
+  },
+})
+// 3. Work with the JSON output (it should be valid but is not guaranteed 
+// to have any predetermined fields) or a refusal
+.then((completion) => {
+  const output = completion.choices[0].message;
+  if (output.refusal) {
+    // Handle refusal
+    console.log(output.refusal);
+  } else if (output.content) {
+    try {
+      const output_json = JSON.parse(output.content);
+      console.log(output_json);
+    } catch (e) {
+    // Handle possible exceptions, e.g. invalid JSON
+    console.log("An error occurred: ", e.message);
+    }
+  }
+});
+```
+
+</CodeGroup>
+
+<Tip>
+  Use **JSON schema instead of JSON objects** whenever you need **strict JSON structure**
+</Tip>
+
 ## Cookbooks & Code Examples
 
 <Card title="Strucrured output - Cookbook" icon="github" iconType="regular" color="#000000" href="https://github.com/nebius/ai-studio-cookbook/blob/main/guided_json.ipynb">
   
 </Card>
+
+/
 
 ## Structured output in Playground
