@@ -26,7 +26,8 @@
             "pages": [
               "ai-models-inference/overview",
               "ai-models-inference/json",
-              "ai-models-inference/batch-inference"
+              "ai-models-inference/batch-inference",
+              "essentials/rate-limits"
             ]
           },
           {
@@ -39,8 +40,7 @@
             "group": "Other capabilities",
             "pages": [
               "essentials/billing",
-              "essentials/enterprise",
-              "essentials/rate-limits"
+              "essentials/enterprise"
             ]
           }
         ]
