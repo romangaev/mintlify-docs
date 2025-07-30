@@ -25,6 +25,7 @@
             "group": "AI models inference",
             "pages": [
               "ai-models-inference/overview",
+              "ai-models-inference/function-calling",
               "ai-models-inference/json",
               "ai-models-inference/batch-inference",
               "essentials/rate-limits"
