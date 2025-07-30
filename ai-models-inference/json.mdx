@@ -30,12 +30,27 @@ Use `response_format`parameter to get JSON output. Depending on the settings in 
   Some models are better in providing JSON due to their training data or our inference engine limitations. Use `JSON mode` tag in on a model card to find a model with structured output supported.
 </Info>
 
+<Steps>
+  <Step title="Choose response format type">
+    Select between strict `"json_schema"` and arbitrary `"json_object"`
+  </Step>
+  <Step title="Optionally: provide JSON schema">
+    Provide the schema in a [JSON Schema Specification](https://json-schema.org/specification) compliant format.
+  </Step>
+  <Step title="Add instructions to the system or user prompt">
+    It's always better to provide the instruction to follow JSON output and the schema to your model's system or user prompt to increase output quality and consistency
+  </Step>
+  <Step title="Test several models">
+    Different models has different structured output capabilities. Always test and compare a few to obtain the best result
+  </Step>
+</Steps>
+
 ## JSON Schema following
 
 JSON that follows a schema provided in your request. Make a request to the Nebius AI Studio API with `{"type": "json_schema"}` in `response_format `and provide desirable schema in a [JSON Schema Specification](https://json-schema.org/specification) compliant format.
 
 <Tip>
-  Many practical tests show that it's always better to provide the schema \*\*both in text prompt for the model and \*\*`"json_schema"`**parameter**
+  Many practical tests show that it's always better to provide the schema both in text prompt for the model and`"json_schema"`**parameter**
 </Tip>
 
 <CodeGroup>
