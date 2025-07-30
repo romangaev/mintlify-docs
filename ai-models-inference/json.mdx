@@ -234,6 +234,87 @@ client.chat.completions.create({
 
 </CodeGroup>
 
+Example of a valid JSON schema:
+
+```json expandable
+{
+  "name": "meal_nutrition",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "meal_name": {
+        "type": "string",
+        "description": "Name or description of the meal",
+        "minLength": 1
+      },
+      "serving_size_g": {
+        "type": "number",
+        "description": "Serving size in grams",
+        "minimum": 1
+      },
+      "nutrients": {
+        "type": "object",
+        "description": "Macronutrient and micronutrient content per serving",
+        "properties": {
+          "calories": {
+            "type": "number",
+            "description": "Energy in kilocalories (kcal)",
+            "minimum": 0
+          },
+          "protein_g": {
+            "type": "number",
+            "description": "Protein in grams",
+            "minimum": 0
+          },
+          "carbohydrates_g": {
+            "type": "number",
+            "description": "Carbohydrates in grams",
+            "minimum": 0
+          },
+          "fat_g": {
+            "type": "number",
+            "description": "Total fat in grams",
+            "minimum": 0
+          },
+          "fiber_g": {
+            "type": "number",
+            "description": "Dietary fiber in grams",
+            "minimum": 0
+          },
+          "sugars_g": {
+            "type": "number",
+            "description": "Sugars in grams",
+            "minimum": 0
+          },
+          "sodium_mg": {
+            "type": "number",
+            "description": "Sodium in milligrams",
+            "minimum": 0
+          }
+        },
+        "required": [
+          "calories",
+          "protein_g",
+          "carbohydrates_g",
+          "fat_g",
+          "fiber_g",
+          "sugars_g",
+          "sodium_mg"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "required": [
+      "meal_name",
+      "serving_size_g",
+      "nutrients"
+    ],
+    "additionalProperties": false
+  },
+  "strict": true
+}
+```
+
 ## Arbitrary JSON object
 
 The model will produce a valid JSON object without following any specific schema.\
@@ -390,6 +471,8 @@ client.chat.completions.create({
   
 </Card>
 
-/
-
 ## Structured output in Playground
+
+You can also experiment on Structured output models capabilities in Playground UI:
+
+![Screenshot2025 07 30at10 11 07 Pn](/images/Screenshot2025-07-30at10.11.07.png)
