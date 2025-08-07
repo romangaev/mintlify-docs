@@ -29,13 +29,16 @@ This capability enables you to build more powerful agents that can:
     - Propose a function call by selecting a relevant tool and filling in the required arguments according to the schema.
   </Step>
   <Step title="Execute and Iterate">
-    If a function call is proposed, your system is responsible for executing the function with the provided arguments. You then pass the function’s output back to the model as part of the next prompt. This allows the conversation to continue seamlessly, with the model incorporating the function result into its response or triggering further tool use.
+    If a function call is proposed, your system is responsible for executing the function with the provided arguments. You then pass the function’s output back to the model as part of the next prompt. This allows the conversation to continue seamlessly, with the model incorporating the function result into its response or triggering further tool use.API Example
   </Step>
 </Steps>
 
+### API Example
+
 <CodeGroup>
 
-```python Python expandable
+```python Python
+
 import json
 import os
 
@@ -136,7 +139,7 @@ for call in completion_tool_calls:
 ```
 
 
-```javascript JavaScript expandable
+```javascript JavaScript
 import OpenAI from 'openai';
 import { z } from 'zod';
 import { zodResponseFormat } from 'openai/helpers/zod';
