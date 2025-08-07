@@ -33,6 +33,26 @@ This capability enables you to build more powerful agents that can:
   </Step>
 </Steps>
 
+## Limitations
+
+The `tool_choice` parameter controls how the model selects which function (tool) to use. It determines whether the model should choose a tool automatically or follow an explicit instruction. Supported values include:
+
+- `"auto"`\
+  The model automatically selects the most appropriate function based on the context of the prompt. This is the default behavior and is useful for most use cases.
+- **Explicit Function Call**\
+  You can instruct the model to call a specific function using the following structure:
+
+  ```json
+  {
+    "type": "function",
+    "function": {
+      "name": "read_file"
+    }
+  }
+  ```
+
+  This forces the model to call the `read_file` function regardless of context, overriding its own tool selection logic.
+
 ## API Example
 
 <CodeGroup>
@@ -227,22 +247,16 @@ Messages array with response:
   
 </Card>
 
-## Limitations
+## Structured output in Playground
 
-The `tool_choice` parameter controls how the model selects which function (tool) to use. It determines whether the model should choose a tool automatically or follow an explicit instruction. Supported values include:
+You can explore Function Calling capabilities of models directly in the Playground:
 
-- `"auto"`\
-  The model automatically selects the most appropriate function based on the context of the prompt. This is the default behavior and is useful for most use cases.
-- **Explicit Function Call**\
-  You can instruct the model to call a specific function using the following structure:
+1. **Go to the "Model Parameters" section.**
+2. In the **"Function calling" section add function description**
+3. **Enter your prompt and run it** to test whether the model returns the expected function selection for your use case.
 
-  ```json
-  {
-    "type": "function",
-    "function": {
-      "name": "read_file"
-    }
-  }
-  ```
+## Read more:
 
-  This forces the model to call the `read_file` function regardless of context, overriding its own tool selection logic.
+<Card title="Structured Output & JSON generation" icon="brackets-curly" color="#000000">
+  
+</Card>

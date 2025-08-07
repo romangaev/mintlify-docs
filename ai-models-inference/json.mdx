@@ -55,7 +55,7 @@ JSON that follows a schema provided in your request. Make a request to the Nebiu
 
 <CodeGroup>
 
-```python Python
+```python Python expandable
 import os
 import json
 from openai import OpenAI
@@ -125,7 +125,7 @@ elif output.content:
 ```
 
 
-```bash cURL
+```bash cURL expandable
 # 1. Define a JSON Schema
 
 export SCHEMA='
@@ -188,7 +188,7 @@ echo $OUTPUT | jq '
 ```
 
 
-```javascript JavaScript
+```javascript JavaScript expandable
 import OpenAI from "openai";
 import { z } from "zod";
 import { zodResponseFormat } from "openai/helpers/zod";
@@ -337,7 +337,7 @@ Make a request to the Nebius AI Studio API with `{"type": "json_object"}` in `re
 
 <CodeGroup>
 
-```python Python
+```python Python expandable
 import os
 import json
 from openai import OpenAI
@@ -389,10 +389,11 @@ elif output.content:
 ```
 
 
-```bash cURL
+```bash cURL expandable
  # 1. Instruct the model to produce JSON. In this example, we do it in the system prompt; 
  # you can do it in a user message instead
  # 2. Set the response format to `json_object`
+
 export OUTPUT=$(curl 'https://api.studio.nebius.com/v1/chat/completions' \
   -X 'POST' \
   -H 'Content-Type: application/json' \
@@ -428,7 +429,7 @@ echo $OUTPUT | jq '
 ```
 
 
-```javascript JavaScript
+```javascript JavaScript expandable
 import OpenAI from 'openai';
 
 const client = new OpenAI({
@@ -480,7 +481,7 @@ client.chat.completions.create({
   Use **JSON schema instead of JSON objects** whenever you need **strict JSON structure**
 </Tip>
 
-## Cookbooks & Code Examples
+## Try it in our Cookbook
 
 <Card title="Strucrured output - Cookbook" icon="github" iconType="regular" color="#000000" href="https://github.com/nebius/ai-studio-cookbook/blob/main/guided_json.ipynb">
   
