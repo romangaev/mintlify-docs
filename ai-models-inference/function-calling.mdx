@@ -33,11 +33,11 @@ This capability enables you to build more powerful agents that can:
   </Step>
 </Steps>
 
-### API Example
+## API Example
 
 <CodeGroup>
 
-```python Python
+```python Python expandable
 
 import json
 import os
@@ -139,7 +139,7 @@ for call in completion_tool_calls:
 ```
 
 
-```javascript JavaScript
+```javascript JavaScript expandable
 import OpenAI from 'openai';
 import { z } from 'zod';
 import { zodResponseFormat } from 'openai/helpers/zod';
@@ -221,11 +221,13 @@ Messages array with response:
 ]
 ```
 
+## Try it in our Cookbook
+
 <Card title="Function & Tool Calling Cookbook" icon="github" color="#000000" href="https://github.com/nebius/ai-studio-cookbook/tree/main/tool-calling">
   
 </Card>
 
-### Limitations
+## Limitations
 
 The `tool_choice` parameter controls how the model selects which function (tool) to use. It determines whether the model should choose a tool automatically or follow an explicit instruction. Supported values include:
 
