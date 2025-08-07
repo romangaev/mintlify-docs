@@ -1,5 +1,59 @@
 ---
 title: "Function calling & Tool Usage"
-description: "Description of your new file."
+description: "Learn how to make models select functions to extend their capabilities"
 icon: "function"
 ---
+
+Function calling allows you to enhance a model's capabilities by integrating it with external code, services, or APIs. You can define a set of functions—also referred to as tools—that the model can call. Based on the context provided in the conversation, the model can intelligently decide which functions to invoke and suggest appropriate arguments.
+
+This capability enables you to build more powerful agents that can:
+
+- Run custom code
+- Retrieve real-time data
+- Interact with third-party services
+- Connect to MCP servers
+- And perform other dynamic actions
+
+<Note>
+  **Important:** The model **does not execute** the functions itself. Instead, it outputs tool invocation instructions in an [OpenAI-compatible function calling format](https://platform.openai.com/docs/guides/function-calling). You are responsible for parsing these outputs and executing the corresponding functions on your backend or client side.
+</Note>
+
+<Steps>
+  <Step title="Define Available Tools">
+    Start by specifying the tools (functions) the model can use. Each tool is described using a JSON Schema that defines its name, input parameters, and expected data types. This schema informs the model how each tool should be invoked.
+  </Step>
+  <Step title="Model Determines Intent">
+    When the model receives a user query, it analyzes the intent and decides how to respond. Based on the context and the tools available, it may:
+
+    - Respond conversationally, or
+    - Propose a function call by selecting a relevant tool and filling in the required arguments according to the schema.
+  </Step>
+  <Step title="Execute and Iterate">
+    If a function call is proposed, your system is responsible for executing the function with the provided arguments. You then pass the function’s output back to the model as part of the next prompt. This allows the conversation to continue seamlessly, with the model incorporating the function result into its response or triggering further tool use.
+  </Step>
+</Steps>
+
+
+<Card title="Function Calling Cookbook" icon="github" color="#000000" href="https://github.com/nebius/ai-studio-cookbook/tree/main/tool-calling">
+  
+</Card>
+
+### Limitations
+
+The `tool_choice` parameter controls how the model selects which function (tool) to use. It determines whether the model should choose a tool automatically or follow an explicit instruction. Supported values include:
+
+- `"auto"`\
+  The model automatically selects the most appropriate function based on the context of the prompt. This is the default behavior and is useful for most use cases.
+- **Explicit Function Call**\
+  You can instruct the model to call a specific function using the following structure:
+
+  ```json
+  {
+    "type": "function",
+    "function": {
+      "name": "read_file"
+    }
+  }
+  ```
+
+  This forces the model to call the `read_file` function regardless of context, overriding its own tool selection logic.
