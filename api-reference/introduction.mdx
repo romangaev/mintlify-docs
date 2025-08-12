@@ -9,7 +9,9 @@ description: "Example section for showcasing API endpoints"
 
 Here are examples of Python, JavaScript SDK and cURL command that makes an API request from your terminal:
 
-```python
+<CodeGroup>
+
+```python Phyton
 import os
 from openai import OpenAI
 
@@ -31,6 +33,65 @@ completion = client.chat.completions.create(
 
 print(completion.to_json())
 ```
+
+
+```bash cURL
+curl 'https://api.studio.nebius.com/v1/chat/completions' \
+  -X 'POST' \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: */*' \
+  -H "Authorization: Bearer $NEBIUS_API_KEY" \
+  --data-binary '{"temperature":0.6,"model":"meta-llama/Meta-Llama-3.1-70B-Instruct","messages":[{"role":"user","content":"Hello!"}]}'
+```
+
+
+```javascript JavaScript
+const OpenAI = require("openai");
+const client = new OpenAI({
+  baseURL: "https://api.studio.nebius.com/v1/",
+  apiKey: process.env.NEBIUS_API_KEY,
+});
+
+client.chat.completions.create({
+  "temperature": 0.6,
+  "model": "meta-llama/Meta-Llama-3.1-70B-Instruct",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Hello!"
+    }
+  ]
+})
+.then((completion) => console.log(completion));
+```
+
+</CodeGroup>
+
+<Accordion title="Response" icon="sparkles">
+  ```
+  {
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "message": {
+          "content": "Hello! It's nice to meet you. Is there something I can help you with, or would you like to chat?",
+          "role": "assistant"
+        }
+      }
+    ],
+    "created": 1717516032,
+    "model": "meta-llama/Meta-Llama-3-70B-Instruct-cheap",
+    "object": "chat.completion",
+    "usage": {
+      "completion_tokens": 26,
+      "prompt_tokens": 13,
+      "total_tokens": 39
+    }
+  }
+  
+  ```
+</Accordion>
 
 ## Authentication
 
