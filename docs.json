@@ -38,6 +38,12 @@
             ]
           },
           {
+            "group": "API",
+            "pages": [
+              "essentials/api-overview"
+            ]
+          },
+          {
             "group": "Other capabilities",
             "pages": [
               "essentials/billing",

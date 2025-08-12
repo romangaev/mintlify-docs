@@ -1,0 +1,62 @@
+---
+title: "Nebius AI Studio API"
+description: "Nebius AI Studio offers an OpenAI-compatible API for inference and fine-tuning. Here are examples of Python, JavaScript SDK and cURL command that makes an API request from your terminal:"
+---
+
+<CodeGroup>
+
+``` Python
+import os
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://api.studio.nebius.com/v1/",
+    api_key=os.environ.get("NEBIUS_API_KEY"),
+)
+
+completion = client.chat.completions.create(
+    model="meta-llama/Meta-Llama-3.1-70B-Instruct",
+    messages=[
+        {
+            "role": "user",
+            "content": """Hello!"""
+        }
+    ],
+    temperature=0.6
+)
+
+print(completion.to_json())
+```
+
+
+``` cURL
+curl 'https://api.studio.nebius.com/v1/chat/completions' \
+  -X 'POST' \
+  -H 'Content-Type: application/json' \
+  -H 'Accept: */*' \
+  -H "Authorization: Bearer $NEBIUS_API_KEY" \
+  --data-binary '{"temperature":0.6,"model":"meta-llama/Meta-Llama-3.1-70B-Instruct","messages":[{"role":"user","content":"Hello!"}]}'
+```
+
+
+``` JavaScript
+const OpenAI = require("openai");
+const client = new OpenAI({
+  baseURL: "https://api.studio.nebius.com/v1/",
+  apiKey: process.env.NEBIUS_API_KEY,
+});
+
+client.chat.completions.create({
+  "temperature": 0.6,
+  "model": "meta-llama/Meta-Llama-3.1-70B-Instruct",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Hello!"
+    }
+  ]
+})
+.then((completion) => console.log(completion));
+```
+
+</CodeGroup>
