@@ -5,7 +5,7 @@ description: "Nebius AI Studio offers an OpenAI-compatible API for inference and
 
 <CodeGroup>
 
-``` Python
+```Python Phyton
 import os
 from openai import OpenAI
 
@@ -29,7 +29,7 @@ print(completion.to_json())
 ```
 
 
-``` cURL
+```cURL cURL
 curl 'https://api.studio.nebius.com/v1/chat/completions' \
   -X 'POST' \
   -H 'Content-Type: application/json' \
@@ -39,7 +39,7 @@ curl 'https://api.studio.nebius.com/v1/chat/completions' \
 ```
 
 
-``` JavaScript
+```JavaScript JavaScript
 const OpenAI = require("openai");
 const client = new OpenAI({
   baseURL: "https://api.studio.nebius.com/v1/",
