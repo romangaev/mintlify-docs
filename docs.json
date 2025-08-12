@@ -40,7 +40,7 @@
           {
             "group": "API",
             "pages": [
-              "essentials/api-overview"
+              "api/overview"
             ]
           },
           {
