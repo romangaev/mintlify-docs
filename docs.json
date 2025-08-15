@@ -60,8 +60,16 @@
               "integrations/helicone",
               "integrations/hugging-face",
               "integrations/postman",
-              "integrations/portkey"
-              
+              "integrations/portkey",
+                {
+                  "group": "LlamaIndex",
+                  "pages": [
+                    "integrations/llamaIndex/overview",
+                    "integrations/llamaIndex/text-to-text",
+                    "integrations/llamaIndex/vision",
+                    "integrations/llamaIndex/embedding"
+                  ]
+                }
             ]
           }
         ]
