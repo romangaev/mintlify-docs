@@ -32,6 +32,12 @@
             ]
           },
           {
+            "group": "AI models inference",
+            "pages": [
+              "ai-models-inference/prompt-presets"
+            ]
+          },
+          {
             "group": "Fine tuning",
             "pages": [
               "essentials/finetuning"
