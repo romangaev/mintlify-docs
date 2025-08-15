@@ -27,7 +27,7 @@ Inference performance is determined by how the endpoint is configured—balancin
 - GPU count
 - Inference-time optimizations (e.g., speculative decoding)
 
-To cover common usage patterns,**two model flavors are available:** 
+To cover common usage patterns,**two model flavors are available:**
 
 <Card title="Base" icon="coin" horizontal>
   
@@ -62,3 +62,16 @@ Our LLM inference service employs a range of optimization techniques to increase
 Our optimization techniques are designed to minimize the impact on model quality. Through extensive testing and evaluation, we have found that our optimized models maintain approximately 99% of the original model's quality.
 
 This means that the optimized models produce nearly identical results to the original models, with only minor differences in output.The quality impact of each optimization technique is carefully evaluated and monitored to ensure that the cumulative effect of all techniques does not compromise the overall quality of the model. Our goal is to provide a high-throughput inference service that delivers accurate and reliable results, while minimizing the computational resources required.
+
+## Generation parameters
+
+You can tune the model’s **generation parameters** to adapt outputs for your use case and optimize performance or cost. Nebius AI Studio supports most of OpenAI compatible generation parameters.
+
+Supported parameters vary by interface:
+
+- **Playground** — Supports the most commonly used parameters.
+- **API** — Supports the full set of vLLM parameters.
+
+### **How to view more model parameters**
+
+To get an extended list of model parameters, send a request that returns a [list of models](https://docs.nebius.com/studio/api/examples#models). Specify the `verbose=true` query parameter in the request endpoint.
