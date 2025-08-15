@@ -17,7 +17,11 @@ icon: "layer-group"
    export NEBIUS_API_KEY=<API_key>
    ```
 
-## **How to fine-tune a model**
+## **How to fine-tune a model: **
+
+### \
+\
+**Python**
 
 1. Using Python : Install openai package:
 
@@ -141,6 +145,79 @@ icon: "layer-group"
 
    Saves the contents to files. The script creates a directory per checkpoint and saves the files into these directories.
 
+### Curl 
+
+\
+1. Upload a file with a training dataset:
+
+```bash
+curl 'https://api.studio.nebius.com/v1/files' \
+   -H 'Accept: application/json' \
+   -H 'Content-Type: multipart/form-data' \
+   -H "Authorization: Bearer $NEBIUS_API_KEY"
+   -F 'file=@<dataset-name>.jsonl' \
+   -F 'purpose=fine-tune'
+```
+
+Specify the file name in the request.
+
+Example of the response:
+
+```bash
+{
+   "id": "<file_ID>",
+   "bytes": 700867,
+   "created_at": 1738235422,
+   "filename": "training-dataset.jsonl",
+   "object": "file",
+   "purpose": "fine-tune"
+}
+```
+
+Save the file ID; it is required to create a fine-tuning job.\
+Optionally to upload a file with validation dataset, use the same request as for the training dataset and save the file ID from the response.
+
+2. Create a fine-tuning job by using the Nebius AI Studio API:
+
+```bash
+curl 'https://api.studio.nebius.com/v1/fine_tuning/jobs' \
+    -X 'POST' \
+    -H 'Accept: application/json' \
+    -H 'Content-Type: application/json' \
+    -H "Authorization: Bearer $NEBIUS_API_KEY" \
+    -d '{
+        "model": "<...>",
+        "suffix": "<...>",
+        "training_file": "<...>",
+        "validation_file": "<...>",
+        "hyperparameters": {
+            "batch_size": "<...>",
+            "learning_rate": "<...>",
+            "n_epochs": "<...>",
+            "warmup_ratio": "<...>",
+            "weight_decay": "<...>",
+            "lora": "<true|false>",
+            "lora_r": "<...>",
+            "lora_alpha": "<...>",
+            "lora_dropout": "<...>",
+            "packing": "<true|false>",
+            "max_grad_norm": "<...>"
+        },
+        "seed": "<...>",
+        "integrations": [
+            {
+                "type": "wandb",
+                "wandb": {
+                    "api_key": "<...>",
+                    "project": "<...>"
+                }
+            }
+        ]
+    }'
+```
+
+For more information about the fine-tuning job parameters, see the API specification of the fine-tuning job object below.
+
 Now, you can use these files to [host the fine-tuned model](https://docs.nebius.com/studio/fine-tuning/host-model) and work with it.
 
 ## **API specification for a fine-tuning job**
@@ -245,9 +322,8 @@ The object below represents the fine-tuning job specification used in the API.
 - `integrations` (array, optional): Integrations that Nebius AI Studio supports for fine-tuning:
   - `type` (string, optional): Integration type. The possible values are the following:
     - `wandb`: Integration with [Weights & Biases](https://wandb.ai/site/).
-    - `mlflow`: Integration with [MLflow](https://mlflow.org/).
 
-    You can export the model training metrics to a project in Weights & Biases or to an MLflow cluster. Nebius AI Studio exports the metrics after you create a fine-tuning job. The service does not export system metrics or logs.
+    You can export the model training metrics to a project in Weights & Biases. Nebius AI Studio exports the metrics after you create a fine-tuning job. The service does not export system metrics or logs.
   - `wandb` (object, optional): Settings for the export to a project in Weights & Biases:
     - `api_key` (string, optional): [API key](https://docs.wandb.ai/support/find_api_key/) from Weights & Biases. The key should be 40 characters long.
     - `project` (string, optional): Name of the project in Weights & Biases.
