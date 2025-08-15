@@ -16,7 +16,9 @@
           {
             "group": "Get Started",
             "pages": [
-              "quickstart"
+              "index",
+              "quickstart",
+              "development"
             ]
           },
           {
@@ -59,7 +61,7 @@
             "pages": [
               "api-reference/introduction",
               {
-                "group": "API Examples",
+                "group": "Examples",
                 "pages": [
                   "api-reference/examples/text-generation"
                 ]

@@ -1,12 +1,10 @@
 ---
-title: "Introduction"
+title: "Text generation"
 ---
 
-<Note>
-  Nebius AI Studio offers an [OpenAI-compatible API](https://studio.nebius.com/api-reference) for inference and fine-tuning.
-</Note>
+For the following examples to work, save your [API key](https://docs.nebius.com/studio/api/authentication) to the `NEBIUS_API_KEY` environment variable.
 
-Here are examples of Python, cURL and JavaScript SDK command that makes an API request from your terminal:
+Here is a sample JSON request body that includes all supported fields:
 
 <CodeGroup>
 
@@ -23,11 +21,38 @@ completion = client.chat.completions.create(
     model="meta-llama/Meta-Llama-3.1-70B-Instruct",
     messages=[
         {
-            "role": "user",
-            "content": """Hello!"""
+          "role": "system",
+          "content": "You are a chemistry expert. Add jokes about cats to your responses from time to time."
+        },
+        {
+          "role": "user",
+          "content": "Hello!"
+        },
+        {
+          "role": "assistant",
+          "content": "Hello! How can I assist you with chemistry today? And did you hear about the cat who became a chemist? She had nine lives, but she only needed one formula!"
         }
     ],
-    temperature=0.6
+    max_tokens=100,
+    temperature=1,
+    top_p=1,
+    top_k=50,
+    n=1,
+    stream=false,
+    stream_options=null,
+    stop=null,
+    presence_penalty=0,
+    frequency_penalty=0,
+    logit_bias=null,
+    logprobs=false,
+    top_logprobs=null,
+    user=null,
+    extra_body={
+        "guided_json": {"type": "object", "properties": {...}}
+    },
+    response_format={
+        "type": "json_object"
+    }
 )
 
 print(completion.to_json())
@@ -40,24 +65,85 @@ curl 'https://api.studio.nebius.com/v1/chat/completions' \
   -H 'Content-Type: application/json' \
   -H 'Accept: */*' \
   -H "Authorization: Bearer $NEBIUS_API_KEY" \
-  --data-binary '{"temperature":0.6,"model":"meta-llama/Meta-Llama-3.1-70B-Instruct","messages":[{"role":"user","content":"Hello!"}]}'
+  --data-binary '{
+    "model": "meta-llama/Meta-Llama-3.1-70B-Instruct",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a chemistry expert. Add jokes about cats to your responses from time to time."
+      },
+      {
+        "role": "user",
+        "content": "Hello!"
+      },
+      {
+        "role": "assistant",
+        "content": "Hello! How can I assist you with chemistry today? And did you hear about the cat who became a chemist? She had nine lives, but she only needed one formula!"
+      }
+    ],
+    "max_tokens": 100,
+    "temperature": 1,
+    "top_p": 1,
+    "top_k": 50,
+    "n": 1,
+    "stream": false,
+    "stream_options": null,
+    "stop": null,
+    "presence_penalty": 0,
+    "frequency_penalty": 0,
+    "logit_bias": null,
+    "logprobs": false,
+    "top_logprobs": null,
+    "user": null,
+    "guided_json": {"type": "object", "properties": {...}}
+    "response_format": {"type": "json_object"}
+  }
+  '
 ```
 
 
 ```javascript JavaScript
 const OpenAI = require("openai");
+
 const client = new OpenAI({
   baseURL: "https://api.studio.nebius.com/v1/",
   apiKey: process.env.NEBIUS_API_KEY,
 });
 
 client.chat.completions.create({
-  "temperature": 0.6,
+  "max_tokens": 100,
+  "temperature": 1,
+  "top_p": 1,
+  "top_k": 50,
+  "n": 1,
+  "stream": false,
+  "stream_options": null,
+  "stop": null,
+  "presence_penalty": 0,
+  "frequency_penalty": 0,
+  "logit_bias": null,
+  "logprobs": false,
+  "top_logprobs": null,
+  "user": null,
+  "extra_body": {
+    "guided_json": {"type": "object", "properties": {...},}
+  },
+  "response_format": {
+    "type": "json_object"
+  },
   "model": "meta-llama/Meta-Llama-3.1-70B-Instruct",
   "messages": [
     {
+      "role": "system",
+      "content": "You are a chemistry expert. Add jokes about cats to your responses from time to time."
+    },
+    {
       "role": "user",
       "content": "Hello!"
+    },
+    {
+      "role": "assistant",
+      "content": "Hello! How can I assist you with chemistry today? And did you hear about the cat who became a chemist? She had nine lives, but she only needed one formula!"
     }
   ]
 })
@@ -69,54 +155,32 @@ client.chat.completions.create({
 <Accordion title="Response">
   ```
   {
+    "id": "cmpl-*****",
     "choices": [
       {
         "finish_reason": "stop",
         "index": 0,
+        "logprobs": null,
         "message": {
           "content": "Hello! It's nice to meet you. Is there something I can help you with, or would you like to chat?",
-          "role": "assistant"
-        }
+          "role": "assistant",
+          "function_call": null,
+          "tool_calls": []
+        },
+        "stop_reason": null
       }
     ],
-    "created": 1717516032,
-    "model": "meta-llama/Meta-Llama-3-70B-Instruct-cheap",
+    "created": 1721397089,
+    "model": "meta-llama/Meta-Llama-3.1-70B-Instruct",
     "object": "chat.completion",
+    "system_fingerprint": null,
     "usage": {
       "completion_tokens": 26,
-      "prompt_tokens": 13,
-      "total_tokens": 39
+      "prompt_tokens": 12,
+      "total_tokens": 38
     }
   }
-  
   ```
 </Accordion>
 
-For more examples, see [Examples of using the Nebius AI Studio API](https://docs.nebius.com/studio/api/examples).
-
-## Authentication
-
-To authenticate, include your _API key_ (e.g., `ABC123...`) in the `Authorization` header, as shown below:
-
-```
-Authorization: Bearer ABC123...
-```
-
-<Warning>
-  Keep your keys private; do not share or expose them in client-side code. If a key is compromised, Nebius AI Studio can automatically revoke it
-</Warning>
-
-To get an API key:
-
-1. In Nebius AI Studio, go to the  [API keys](https://studio.nebius.com/settings/api-keys) section.
-2. Click  **Create API key**.
-3. Enter the key name and then click **Create**.
-4. Save the displayed API key. You cannot open it later in Nebius AI Studio.
-
-<Tip>
-  In the [Nebius AI Studio inference playground](https://studio.nebius.com/playground), you can view your model setup and chat as code that makes API requests, and use this code in your applications. For more details, see [View code](https://docs.nebius.com/studio/inference/playground#view-code).
-</Tip>
-
-<Tip>
-  You can use [integrations with third-party instruments](https://docs.nebius.com/studio/inference/integrations) instead of the API.
-</Tip>
+For detailed field descriptions, see the [API reference](https://studio.nebius.com/api-reference).
