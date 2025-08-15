@@ -69,7 +69,8 @@
                   "api-reference/examples/list-of-models",
                   "api-reference/examples/image-generation",
                   "api-reference/examples/create-embeddings",
-                  "api-reference/examples/files"
+                  "api-reference/examples/files",
+                  "api-reference/examples/batches"
                 ]
               }
             ]
