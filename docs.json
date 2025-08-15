@@ -64,7 +64,12 @@
                 "group": "Examples",
                 "pages": [
                   "api-reference/examples/text-generation",
-                  "api-reference/examples/vision-capabilities"
+                  "api-reference/examples/vision-capabilities",
+                  "api-reference/examples/text-generation-for-code-autocomplete",
+                  "api-reference/examples/list-of-models",
+                  "api-reference/examples/image-generation",
+                  "api-reference/examples/create-embeddings",
+                  "api-reference/examples/files"
                 ]
               }
             ]

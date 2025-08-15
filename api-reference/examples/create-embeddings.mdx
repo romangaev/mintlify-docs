@@ -1,0 +1,67 @@
+---
+title: "Create embeddings"
+---
+
+For the following example to work, save your [API key](https://docs.nebius.com/studio/api/authentication) to the `NEBIUS_API_KEY` environment variable.
+
+Request:
+
+<CodeGroup>
+
+```python Phyton
+curl https://api.studio.nebius.com/v1/embeddings \
+  -H "Authorization: Bearer $NEBIUS_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+      "input": "Wake up, Neo...",
+      "model": "BAAI/bge-en-icl",
+      "encoding_format": "float"
+  }'
+```
+
+
+```bash cURL
+curl https://api.studio.nebius.com/v1/images/generations \
+  -H "Authorization: Bearer $NEBIUS_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "stability-ai/sdxl",
+    "prompt": "An elephant in a desert",
+    "response_format": "b64_json",
+    "response_extension": "webp",
+    "width": 512,
+    "height": 512,
+    "num_inference_steps": 30,
+    "seed": -1,
+    "negative_prompt": "Giraffes, night sky"
+  }'
+```
+
+</CodeGroup>
+
+<Accordion title="Response">
+  ```
+  {
+    "object": "list",
+    "data": [
+      {
+        "object": "embedding",
+        "embedding": [
+          0.0023064255,
+          -0.009327292,
+          .... (1536 floats total for BAAI/bge-en-icl)
+          -0.0028842222,
+        ],
+        "index": 0
+      }
+    ],
+    "model": "BAAI/bge-en-icl",
+    "usage": {
+      "prompt_tokens": 8,
+      "total_tokens": 8
+    }
+  }
+  ```
+</Accordion>
+
+For detailed field descriptions, see the [API reference](https://studio.nebius.com/api-reference).

@@ -1,0 +1,115 @@
+---
+title: "Image generation"
+---
+
+For the following example to work, save your [API key](https://docs.nebius.com/studio/api/authentication) to the `NEBIUS_API_KEY` environment variable.
+
+Request:
+
+<CodeGroup>
+
+```python Phyton
+from openai import OpenAI
+import os
+
+client = OpenAI(
+    base_url="https://api.studio.nebius.com/v1",
+    api_key=os.environ.get("NEBIUS_API_KEY"),
+)
+
+completion = client.images.generate(
+    model="stability-ai/sdxl",
+    prompt="An elephant in a desert",
+    response_format="b64_json",
+    extra_body={
+        "response_extension": "png",
+        "width": 512,
+        "height": 512,
+        "num_inference_steps": 30,
+        "seed": -1,
+        "negative_prompt": "Giraffes, night sky"
+    }
+)
+
+print(completion.to_json())
+```
+
+
+```bash cURL
+curl https://api.studio.nebius.com/v1/images/generations \
+  -H "Authorization: Bearer $NEBIUS_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "stability-ai/sdxl",
+    "prompt": "An elephant in a desert",
+    "response_format": "b64_json",
+    "response_extension": "webp",
+    "width": 512,
+    "height": 512,
+    "num_inference_steps": 30,
+    "seed": -1,
+    "negative_prompt": "Giraffes, night sky"
+  }'
+```
+
+
+```javascript JavaScript
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  baseURL: "https://api.studio.nebius.com/v1",
+  apiKey: process.env.NEBIUS_API_KEY,
+});
+
+const response = await client.images.generate({
+  model: 'black-forest-labs/flux-schnell',
+  response_format: 'b64_json',
+  width: 1024,
+  height: 768,
+  response_extension: 'png',
+  num_inference_steps: 4,
+  negative_prompt:
+    'Giraffes, night sky',
+  seed: -1,
+  prompt: 'An elephant in a desert',
+}).then((completion) => {
+  console.log(completion.data);
+});
+```
+
+</CodeGroup>
+
+<Accordion title="Response">
+  <CodeGroup>
+
+  ```Non-verbose Response format: b64_json
+  {
+    "data": [
+      {
+        "b64_json": "UklGRg66Ag..."
+      }
+    ],
+    "id": "text2img-0941c39c-..."
+  }
+  ```
+
+  
+  ```Verbose Response format: url
+  {
+    "data": [
+      {
+        "url": "https://pictures-storage-dev.storage.eu-north1.nebius.cloud/text2img-0941c39c-....webp"
+      }
+    ],
+    "id": "text2img-0941c39c-..."
+  }
+  ```
+
+  </CodeGroup>
+</Accordion>
+
+<Note>
+  Save the image once you receive the link. Nebius AI Studio does not store the image from the provided link permanently.
+</Note>
+
+For detailed field descriptions, see the [API reference](https://studio.nebius.com/api-reference).

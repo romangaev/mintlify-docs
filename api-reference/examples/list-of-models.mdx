@@ -1,0 +1,108 @@
+---
+title: "List of models"
+---
+
+For the following example to work, save your [API key](https://docs.nebius.com/studio/api/authentication) to the `NEBIUS_API_KEY` environment variable.
+
+Request:
+
+<CodeGroup>
+
+```python Phyton
+import os
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://api.studio.nebius.com/v1/",
+    api_key=os.environ.get("NEBIUS_API_KEY"),
+)
+
+client.models.list()
+```
+
+
+```bash cURL
+curl https://api.studio.nebius.com/v1/models \
+  -H "Authorization: Bearer $NEBIUS_API_KEY"
+```
+
+</CodeGroup>
+
+<Accordion title="Response">
+  <CodeGroup>
+
+  ```Non-verbose Non-verbose
+  {
+    "object": "list",
+    "data": [
+      {
+        "id": 'meta-llama/Meta-Llama-3.1-8B-Instruct',
+        "object": "model",
+        "created": 1724480826,
+        "owned_by": 'system'
+      },
+      {
+        "id": 'meta-llama/Meta-Llama-3.1-70B-Instruct',
+        "object": "model",
+        "created": 1724480826,
+        "owned_by": 'system'
+      },
+    ],
+    "object": "list"
+  }
+  ```
+
+  
+  ```Verbose Verbose
+  {
+    "object": "list",
+    "data": [
+      {
+        "id": "meta-llama/Meta-Llama-3.1-8B-Instruct-fast",
+        "name": "Meta-Llama-3.1-8B-Instruct (fast)",
+        "created": 1750954196,
+        "description": "",
+        "context_length": 131072,
+        "architecture": {
+          "modality": "text->text",
+          "tokenizer": "Other"
+        },
+        "quantization": "fp8",
+        "pricing": {
+          "prompt": "0.00000003",
+          "completion": "0.00000009",
+          "image": "0",
+          "price_per_video_second": "0",
+          "request": "0"
+        },
+        "per_request_limits": {
+          "tokens_per_minute": 800000.0,
+          "requests_per_minute": 1200.0,
+          "burst_ratio": 1.0
+        },
+        "object": "model",
+        "owned_by": "system"
+      },
+      ...
+    ]
+  }
+  ```
+
+  </CodeGroup>
+</Accordion>
+
+For detailed field descriptions, see the [API reference](https://studio.nebius.com/api-reference).
+
+## **Specific model parameter**
+
+1. [Install jq](https://jqlang.org/download/) if you do not have it.
+2. Get the model ID: in the **Models** page, next to the model, click → **Copy model ID**.
+3. Copy the name of the required parameter. See the list of available parameters in the **RichModel** schema in the [API reference](https://studio.nebius.com/api-reference).
+4. Add the values to the following request:
+
+```bash
+   curl -s 'https://api.studio.nebius.com/v1/models?verbose=true' \
+     -H "Authorization: Bearer $NEBIUS_API_KEY" \
+     -H 'accept: application/json' \
+     -X GET | jq '.data[] | select(.id == "<model_ID>") | .<parameter_name>'
+```

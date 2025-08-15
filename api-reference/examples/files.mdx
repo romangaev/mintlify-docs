@@ -1,0 +1,192 @@
+---
+title: "Files"
+---
+
+For the following example to work, save your [API key](https://docs.nebius.com/studio/api/authentication) to the `NEBIUS_API_KEY` environment variable.
+
+### **Upload a file: POST**
+
+Request:
+
+<CodeGroup>
+
+```python Phyton
+import os
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://api.studio.nebius.com/v1/",
+    api_key=os.environ.get("NEBIUS_API_KEY"),
+)
+
+batch_requests = client.files.create(
+    file=open("batch-requests.jsonl", "rb"),
+    purpose="batch"
+)
+```
+
+
+```bash cURL
+curl https://api.studio.nebius.com/v1/files \
+  -H "Authorization: Bearer $NEBIUS_API_KEY" \
+  -F purpose="batch" \
+  -F file="@batch-requests.jsonl"
+```
+
+</CodeGroup>
+
+<Accordion title="Response">
+  ```
+  {
+    "id": "file-123",
+    "object": "file",
+    "bytes": 120000,
+    "created_at": 1730723658,
+    "filename": "batch-requests.jsonl",
+    "purpose": "batch"
+  }
+  ```
+</Accordion>
+
+### **Get file info: GET**
+
+Request:
+
+<CodeGroup>
+
+```python Phyton
+client.files.retrieve("file-123")
+```
+
+
+```bash cURL
+curl https://api.studio.nebius.com/v1/files/file-123 \
+  -H "Authorization: Bearer $NEBIUS_API_KEY"
+```
+
+</CodeGroup>
+
+<Accordion title="Response">
+  ```
+  {
+    "id": "file-123",
+    "object": "file",
+    "bytes": 120000,
+    "created_at": 1730723658,
+    "filename": "batch-requests.jsonl",
+    "purpose": "batch"
+  }
+  ```
+</Accordion>
+
+### **Get file content: GET**
+
+Request:
+
+<CodeGroup>
+
+```python Phyton
+batch_result = client.files.content("file-123")
+print(batch_result.text)
+```
+
+
+```bash cURL
+curl https://api.studio.nebius.com/v1/files/file-123/content \
+  -H "Authorization: Bearer $NEBIUS_API_KEY" > batch_result.jsonl
+```
+
+</CodeGroup>
+
+### **List files: GET**
+
+Request:
+
+<CodeGroup>
+
+```python Phyton
+import os
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://api.studio.nebius.com/v1/",
+    api_key=os.environ.get("NEBIUS_API_KEY"),
+)
+
+client.files.list()
+```
+
+
+```bash cURL
+curl https://api.studio.nebius.com/v1/files \
+  -H "Authorization: Bearer $NEBIUS_API_KEY"
+```
+
+</CodeGroup>
+
+<Accordion title="Response">
+  ```
+  {
+    "data": [
+      {
+        "id": "file-123",
+        "object": "file",
+        "bytes": 120000,
+        "created_at": 1730723658,
+        "filename": "batch-requests.jsonl",
+        "purpose": "batch"
+      },
+      {
+        "id": "file-789",
+        "object": "file",
+        "bytes": 120,
+        "created_at": 1731493853,
+        "filename": "health-records-batch.jsonl",
+        "purpose": "batch"
+      }
+    ],
+    "object": "list"
+  }
+  ```
+</Accordion>
+
+### **Delete a file: DELETE**
+
+Request:
+
+<CodeGroup>
+
+```python Phyton
+import os
+from openai import OpenAI
+
+client = OpenAI(
+    base_url="https://api.studio.nebius.com/v1/",
+    api_key=os.environ.get("NEBIUS_API_KEY"),
+)
+
+client.files.delete("file_123")
+```
+
+
+```bash cURL
+curl https://api.studio.nebius.com/v1/files/file_123 \
+  -H "Authorization: Bearer $NEBIUS_API_KEY" \
+  -X DELETE
+```
+
+</CodeGroup>
+
+<Accordion title="Response">
+  ```
+  {
+    "id": "batch_123",
+    "object": "file",
+    "deleted": true
+  }
+  ```
+</Accordion>
+
+For detailed field descriptions, see the [API reference](https://studio.nebius.com/api-reference).
+
+## 
