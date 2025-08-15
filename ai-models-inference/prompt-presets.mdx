@@ -1,4 +1,49 @@
 ---
-title: "New file"
-description: "Description of your new file."
+title: "Prompt presets"
+description: "Learn how to save your prompts and reuse them"
 ---
+
+**Prompt presets** let you save and reuse model setups you’ve tested in Nebius AI Studio, making it easy to manage and share configurations.
+
+In the **Inference playground**, you can store the model parameters, system prompt, and few-shot examples as a prompt preset. Saved presets appear on the **Prompt presets** page, where you can:
+
+- Reopen them in the playground for further testing
+- Export them as code for integration into your application
+- Share them with your team
+
+### Prompt preset contents
+
+A prompt preset is based on a single model setup from the playground and includes:
+
+- **Text-to-text model** — Other model types are not supported.
+- **Model parameters** available in the playground (e.g., temperature, max tokens). Parameters available only via API are not included.
+- **System prompt** (if added in your setup).
+- **Few-shot examples** — user prompts and AI responses you’ve added.
+
+<Warning>
+  Your actual chat history with the model is **not saved **in the preset.
+</Warning>
+
+### Creating a preset
+
+<Steps>
+  <Step title="Save preset in Playground">
+    In the left panel, click Save preset. If using Compare mode, click **⋯ → Save preset** in the panel of the desired model
+  </Step>
+  <Step title="Fill in information">
+    In the dialog, enter a name and (optional) tags.
+  </Step>
+  <Step title="Click Save preset.">
+    
+  </Step>
+</Steps>
+
+### Using presets
+
+You can manage all saved presets on the **Prompt presets** page.
+
+- **Open in playground** — Click a preset to load it back into the playground.
+- **View as code** — Click **⋯ → View code** to generate code for use in your app.
+- **Share** — Click **⋯ → Share** to copy a URL.
+
+  > Recipients must have a Nebius AI Studio account to access presets and other inference features.
