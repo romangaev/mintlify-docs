@@ -63,7 +63,8 @@
               {
                 "group": "Examples",
                 "pages": [
-                  "api-reference/examples/text-generation"
+                  "api-reference/examples/text-generation",
+                  "api-reference/examples/vision-capabilities"
                 ]
               }
             ]
