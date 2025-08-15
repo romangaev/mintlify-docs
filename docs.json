@@ -58,7 +58,9 @@
               "integrations/aisuite",
               "integrations/continue",
               "integrations/helicone",
-              "integrations/hugging-face"
+              "integrations/hugging-face",
+              "integrations/postman",
+              "integrations/portkey"
               
             ]
           }
