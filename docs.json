@@ -56,7 +56,10 @@
             "pages": [
               "integrations/overview",
               "integrations/aisuite",
-              "integrations/continue"
+              "integrations/continue",
+              "integrations/helicone",
+              "integrations/hugging-face"
+              
             ]
           }
         ]

@@ -1,0 +1,207 @@
+---
+title: "Helicone"
+description: "How to log Nebius AI Studio usage with Helicone."
+---
+
+You can use the [Helicone](https://www.helicone.ai/) observability platform to gather statistics on your requests to Nebius AI Studio. Helicone routes your requests to Nebius AI Studio through its Gateway and collects usage data. The statistics and costs are then visualized on the Helicone dashboard. This integration works with all [Nebius AI Studio models](https://docs.nebius.com/studio/inference/models) for inference, including text-to-text, text-to-image and other modalities.
+
+To use the integration, do the following:
+
+1. [Create a Nebius API key](https://docs.nebius.com/studio/api/authentication) for authentication.
+2. Save the API key to an environment variable:
+
+   ```bash
+   export NEBIUS_API_KEY=<API_key>
+   ```
+3. [Create a Helicone account](https://us.helicone.ai/signup).
+4. Log in to Helicone.
+5. Go to **Settings** → **API Keys** and generate a Helicone API key.
+6. Save the API key into a `HELICONE_API_KEY` environment variable:
+
+   ```bash
+   export HELICONE_API_KEY="<Helicone_API_key>"
+   ```
+7. Configure the integration:
+
+<Tabs>
+  <Tab title="Python">
+    1. Create the following `helicone-test.py` script:
+
+       ```python
+       import openai
+       import os
+       
+       # Create an OpenAI client
+       client = openai.Client(
+           base_url="https://nebius.helicone.ai/v1",
+           api_key=os.environ.get("NEBIUS_API_KEY"),
+           default_headers={
+               "Helicone-Auth": f"Bearer {os.environ.get("HELICONE_API_KEY")}",
+           }
+       )
+       
+       # Use the client to create a multi-message request and print the response
+       response = client.chat.completions.create(
+           model="meta-llama/Llama-3.3-70B-Instruct",
+           messages=[
+               {"role": "system", "content": "You are a helpful assistant."},
+               {"role": "user", "content": "Hello!"},
+           ]
+       )
+       
+       print(response.choices[0].message.content)
+       ```
+
+       In this script, the following settings are specific to the Helicone integration:
+       - `base_url` contains the address of the Helicone API Gateway for the Nebius AI Studio provider.
+       - `default_headers` contains a `Helicone-Auth` header with the Helicone API key.
+    2. Run the script:
+
+       ```bash
+       python helicone-test.py
+       ```
+
+       The output is the following:
+
+       ```
+       Hello. How can I assist you today?
+       ```
+
+    You can change this code to fit your needs:
+
+    - To work with a different model, change `model`. You can copy the model ID from the [model card](https://studio.nebius.com/playground) or look it up in this [list](https://docs.nebius.com/studio/inference/models).
+    - Modify `messages` to specify your questions.
+
+    To work with models of different modalities, you can use the same OpenAI client and call other methods, for example, `client.images.generate` for image generation. See also [examples](https://docs.nebius.com/studio/api/examples).
+  </Tab>
+  <Tab title="Node.js">
+    1. Create the following `helicone-test.js` script:
+
+       ```javascript
+       const OpenAI = require('openai');
+       
+       // Create an OpenAI client
+       const client = new OpenAI({
+         baseURL: "https://nebius.helicone.ai/v1/",
+         apiKey: process.env.NEBIUS_API_KEY,
+         defaultHeaders: {
+               "Helicone-Auth": "Bearer " + (process.env.HELICONE_API_KEY),
+           }
+       });
+       
+       // Use the client to create a multi-message request and print the response
+       client.chat.completions.create({
+          "model": "meta-llama/Llama-3.3-70B-Instruct",
+          "messages": [
+             {
+                "role": "system",
+                "content": "You are a helpful assistant."
+             },
+             {
+                "role": "user",
+                "content": "Hello!"
+             }
+          ]
+       })
+       .then((response) => console.log(response.choices[0].message.content));
+       ```
+
+       In this script, the following settings are specific to the Helicone integration:
+       - `baseUrl` contains the address of the Helicone API Gateway for the Nebius AI Studio provider.
+       - `defaultHeaders` contains a `Helicone-Auth` header with the Helicone API key.
+    2. Run the script:
+
+       ```bash
+       node helicone-test.js
+       ```
+
+       The output is the following:
+
+       ```
+       Hello. How can I assist you today?
+       ```
+
+    You can change this code to fit your needs:
+
+    - To work with a different model, change `model`. You can copy the model ID from the [model card](https://studio.nebius.com/playground) or look it up in this [list](https://docs.nebius.com/studio/inference/models).
+    - Modify `messages` to specify your questions.
+
+    To work with models of different modalities, you can use the same OpenAI client and call other methods, for example, `client.images.generate` for image generation. See also [examples](https://docs.nebius.com/studio/api/examples).
+  </Tab>
+  <Tab title="cURL">
+    Run the following command:
+
+    ```bash
+    curl -X 'POST' \
+      'https://nebius.helicone.ai/v1/chat/completions' \
+      -H 'Content-Type: application/json' \
+      -H 'Accept: */*' \
+      -H "Authorization: Bearer $NEBIUS_API_KEY" \
+      -H "Helicone-Auth: Bearer $HELICONE_API_KEY" \
+      --data-binary '{
+        "model": "meta-llama/Llama-3.3-70B-Instruct",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are a helpful assistant."
+          },
+          {
+            "role": "user",
+            "content": "Hello!"
+          }
+        ]
+      }'
+    ```
+
+    In this command, the following settings are specific to the Helicone integration:
+
+    - Request URL contains the address of the Helicone API Gateway for the Nebius AI Studio provider.
+    - Additional `Helicone-Auth` header contains the Helicone API key.
+
+    The output is the following (below is a pretty-printed version, the `curl` command returns output in one line):
+
+    <Accordion title="Response">
+      ```
+      {
+        "id": "chatcmpl-5876fcb564cf4917a15d5b79c736b400",
+        "choices": [
+          {
+            "finish_reason": "stop",
+            "index": 0,
+            "logprobs": null,
+            "message": {
+              "content": "Hello. How can I assist you today?",
+              "refusal": null,
+              "role": "assistant",
+              "audio": null,
+              "function_call": null,
+              "tool_calls": [],
+              "reasoning_content": null
+            },
+            "stop_reason": null
+          }
+        ],
+        "created": 1744804838,
+        "model": "meta-llama/Llama-3.3-70B-Instruct",
+        "object": "chat.completion",
+        "service_tier": null,
+        "system_fingerprint": null,
+        "usage": {
+          "completion_tokens": 10,
+          "prompt_tokens": 43,
+          "total_tokens": 53,
+          "completion_tokens_details": null,
+          "prompt_tokens_details": null
+        },
+        "prompt_logprobs": null
+      }
+      ```
+    </Accordion>
+    You can change this command to fit your needs:
+
+    - To work with a different model, change `model`. You can copy the model ID from the [model card](https://studio.nebius.com/playground) or look it up in this [list](https://docs.nebius.com/studio/inference/models).
+    - Modify `messages` to specify your questions.
+
+    To work with models of different modalities, you can call other endpoints, for example, `v1/images/generations` for image generation. See also [examples](https://docs.nebius.com/studio/api/examples).
+  </Tab>
+</Tabs>
