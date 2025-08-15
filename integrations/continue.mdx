@@ -1,0 +1,102 @@
+---
+title: "Continue"
+description: "How to use Nebius AI Studio with Continue code assistant"
+---
+
+You can add Nebius AI Studio as a provider in [Continue](https://www.continue.dev/) code assistant within your VS Code or JetBrains IDE. It allows you to use the [models](https://docs.nebius.com/studio/inference/models/#model-list) available in Nebius AI Studio within your IDE. The assistant can explain the code, rewrite it and provide autocomplete suggestions.
+
+## **Prerequisites**
+
+[Create an API key](https://docs.nebius.com/studio/api/authentication) for authentication.
+
+## **Steps**
+
+### **Install Continue**
+
+<Tabs>
+  <Tab title="JetBrains IDE">
+    1. Open your JetBrains IDE and go to **Settings**.
+    2. In the sidebar, select **Plugins** and search for "Continue" in the marketplace.
+    3. Click **Install** next to the Continue extension.
+    4. Restart the IDE.
+
+    After installation, a Continue logo appears in your IDE sidebar. Click the logo to set up the code assistant and start using it.
+
+    ### **Add models hosted on Nebius AI Studio**
+
+    1. Click the Continue logo.
+    2. In the chat window, open the drop-down model list at the bottom and select **Add Chat model**.
+    3. In the **Provider** drop-down list, select **Nebius AI Studio**.
+    4. In the **Model** drop-down list, select a model.
+    5. Enter your **API key** to authorize requests.
+
+    Now you can chat with this model or ask it to rewrite your code in the **Edit** mode. See more in the [Continue documentation](https://docs.continue.dev/getting-started/overview).
+
+    ### **Set up a model for autocomplete**
+
+    Code autocomplete doesn't use the model you set up for **Chat**. It supports specific [models for working with code](https://docs.nebius.com/studio/inference/models/text-to-text-code). You need to set the autocomplete model separately in the Continue configuration file:
+
+    1. Click the Continue logo.
+    2. In the Continue sidebar, click the gear icon, and then click **Open configuration file**.
+    3. In the `config.json` file, edit the contents of the `tabAutocompleteModel` key:
+       - Specify `nebius` as `provider`.
+       - Enter a [model name](https://docs.nebius.com/studio/inference/models/text-to-text#text-to-text-code) for `model` and `title`.
+       - Enter your [API key](https://docs.nebius.com/studio/inference/integrations/continue#prerequisites).
+
+       For example, to use the [Qwen/Qwen2.5-Coder-32B](https://huggingface.co/Qwen/Qwen2.5-Coder-32B) model for autocomplete, enter the following:
+
+       ```
+       "tabAutocompleteModel": {
+         "title": "Qwen 2.5 Coder 32b",
+         "provider": "nebius",
+         "model": "qwen-coder2.5-32b",
+         "apiKey": "<Nebius API Key>"
+       },
+       
+       ```
+
+    See more about autocomplete in the [Continue documentation](https://docs.continue.dev/autocomplete/model-setup).
+  </Tab>
+  <Tab title="VS Code">
+    1. Go to the [Continue extension page on Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=Continue.continue) and click **Install**.
+    2. When you are redirected to VS Code, click **Install** again.\
+       After installation, a Continue logo appears in your IDE sidebar. Click the logo to set up the code assistant and start using it.
+
+    After installation, a Continue logo appears in your IDE sidebar. Click the logo to set up the code assistant and start using it.
+
+    ### **Add models hosted on Nebius AI Studio**
+
+    1. Click the Continue logo.
+    2. In the chat window, open the drop-down model list at the bottom and select **Add Chat model**.
+    3. In the **Provider** drop-down list, select **Nebius AI Studio**.
+    4. In the **Model** drop-down list, select a model.
+    5. Enter your **API key** to authorize requests.
+
+    Now you can chat with this model or ask it to rewrite your code in the **Edit** mode. See more in the [Continue documentation](https://docs.continue.dev/getting-started/overview).
+
+    ### **Set up a model for autocomplete**
+
+    Code autocomplete doesn't use the model you set up for **Chat**. It supports specific [models for working with code](https://docs.nebius.com/studio/inference/models/text-to-text-code). You need to set the autocomplete model separately in the Continue configuration file:
+
+    1. Click the Continue logo.
+    2. In the Continue sidebar, click the gear icon, and then click **Open configuration file**.
+    3. In the `config.json` file, edit the contents of the `tabAutocompleteModel` key:
+       - Specify `nebius` as `provider`.
+       - Enter a [model name](https://docs.nebius.com/studio/inference/models/text-to-text#text-to-text-code) for `model` and `title`.
+       - Enter your [API key](https://docs.nebius.com/studio/inference/integrations/continue#prerequisites).
+
+       For example, to use the [Qwen/Qwen2.5-Coder-32B](https://huggingface.co/Qwen/Qwen2.5-Coder-32B) model for autocomplete, enter the following:
+
+       ```
+       "tabAutocompleteModel": {
+         "title": "Qwen 2.5 Coder 32b",
+         "provider": "nebius",
+         "model": "qwen-coder2.5-32b",
+         "apiKey": "<Nebius API Key>"
+       },
+       
+       ```
+
+    See more about autocomplete in the [Continue documentation](https://docs.continue.dev/autocomplete/model-setup).
+  </Tab>
+</Tabs>

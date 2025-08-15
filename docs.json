@@ -50,6 +50,14 @@
               "essentials/billing",
               "essentials/enterprise"
             ]
+          },
+          {
+            "group": "Integrations",
+            "pages": [
+              "integrations/overview",
+              "integrations/aisuite",
+              "integrations/continue"
+            ]
           }
         ]
       },

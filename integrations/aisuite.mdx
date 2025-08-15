@@ -1,0 +1,92 @@
+---
+title: "Aisuite"
+description: "How to work with Nebius AI Studio by using aisuite."
+---
+
+You can use the [aisuite](https://github.com/andrewyng/aisuite) open-source package to work with Nebius AI Studio in Python. aisuite provides a standardized interface that extends the OpenAI Python SDK and simplifies integration with different AI providers. Thanks to its built-in support for the Nebius AI Studio endpoint and API keys, you can make requests to models as simple as the following:
+
+```python
+response = client.chat.completions.create(
+    model="nebius:meta-llama/Llama-3.3-70B-Instruct",
+    messages=messages,
+)
+```
+
+<Note>
+  Aisuite works only with text-to-text models.
+</Note>
+
+## **Prerequisites**
+
+1. [Create an API key](https://studio.nebius.com/settings/api-keys) to authorize requests to Nebius AI Studio.
+2. Save the API key into a `NEBIUS_API_KEY` environment variable:
+
+   ```bash
+   export NEBIUS_API_KEY="<API_key>"
+   ```
+3. Install the `aisuite` and `openai` packages:
+
+   ```bash
+   pip install aisuite
+   pip install openai
+   ```
+
+## **Create a chat completion**
+
+Paste the following code into your script:
+
+```python
+import aisuite as ai
+
+client = ai.Client()
+
+provider = "nebius"
+model_id = "meta-llama/Llama-3.3-70B-Instruct"
+
+messages = [
+    {
+        "role": "system",
+        "content": "You are a helpful assistant."
+    },
+    {
+        "role": "user",
+        "content": "How many times has Jurgen Klopp won the Champions League?"
+    },
+]
+
+response = client.chat.completions.create(
+    model=f"{provider}:{model_id}",
+    messages=messages,
+)
+
+print(response.choices[0].message.content)
+```
+
+Change the code to fit your needs:
+
+- To work with a different model, change `model_id`. You can copy the model ID from the [model card](https://studio.nebius.com/playground) or look it up in the [list](https://docs.nebius.com/studio/inference/models).
+- Modify `messages` to get the model's responses to your questions. To work with a larger context, you can also add previous responses from the model. For example:
+
+  ```python
+  messages = [
+      {
+          "role": "system",
+          "content": "You are a helpful assistant."
+      },
+      {
+          "role": "user",
+          "content": "How many times has Jurgen Klopp won the Champions League?"
+      },
+      {
+          "role": "assistant",
+          "content": (
+              "Jurgen Klopp has won the Champions League once, which was in "
+              "2019 when Liverpool defeated Tottenham Hotspur 2-0 in the final."
+          )
+      },
+      {
+          "role": "user",
+          "content": "Did he continue with Liverpool after that?"
+      },
+  ]
+  ```
