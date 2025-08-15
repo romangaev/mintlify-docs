@@ -306,7 +306,7 @@
       },
       "get": {
         "tags": [
-          "batch"
+          "Batch"
         ],
         "summary": "List user batches",
         "operationId": "v1_list_batches_v1_batches_get",
