@@ -60,7 +60,7 @@
             "group": "API Documentation",
             "pages": [
               "api-reference/introduction",
-              "api-reference/examples/"
+              "api-reference/examples/text-generation"
             ]
           },
           {
