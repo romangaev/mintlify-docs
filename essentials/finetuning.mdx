@@ -161,18 +161,18 @@ curl 'https://api.studio.nebius.com/v1/files' \
 
 Specify the file name in the request.
 
-Example of the response:
-
-```bash
-{
-   "id": "<file_ID>",
-   "bytes": 700867,
-   "created_at": 1738235422,
-   "filename": "training-dataset.jsonl",
-   "object": "file",
-   "purpose": "fine-tune"
-}
-```
+<Accordion title="Example of the response">
+  ```bash
+  {
+     "id": "<file_ID>",
+     "bytes": 700867,
+     "created_at": 1738235422,
+     "filename": "training-dataset.jsonl",
+     "object": "file",
+     "purpose": "fine-tune"
+  }
+  ```
+</Accordion>
 
 Save the file ID; it is required to create a fine-tuning job.\
 Optionally to upload a file with validation dataset, use the same request as for the training dataset and save the file ID from the response.
@@ -219,6 +219,117 @@ curl 'https://api.studio.nebius.com/v1/fine_tuning/jobs' \
 For more information about the fine-tuning job parameters, see the API specification of the fine-tuning job object below.
 
 Now, you can use these files to [host the fine-tuned model](https://docs.nebius.com/studio/fine-tuning/host-model) and work with it.
+
+3. Make sure that the job status is `succeeded`. To do this, request information about this job:
+
+   ```bash
+   curl 'https://api.studio.nebius.com/v1/fine_tuning/jobs/<job_ID>' \
+      -X 'GET' \
+      -H 'Accept: application/json' \
+      -H 'Authorization: Bearer $NEBIUS_API_KEY'
+   ```
+
+   Specify the job ID in the endpoint.
+
+   The status of a freshly started job is `running`. You can poll the status periodically to make sure that the job status has changed to `succeeded`. Do not send the requests more frequently than 15 seconds each.
+
+   If the status is `failed`, examine the output. It describes the error and how to fix it. If the error code is `500`, resubmit the job.
+
+<Accordion title="Example of 200 OK response">
+  ```
+  
+  
+  {
+    "id": "<job_ID>",
+    "created_at": 1738250578,
+    "error": null,
+    "finished_at": null,
+    "hyperparameters": {
+      "batch_size": 10,
+      "learning_rate": 0.0001,
+      "n_epochs": 5,
+      "warmup_ratio": 0.5,
+      "weight_decay": 0,
+      "lora": true,
+      "lora_r": 16,
+      "lora_alpha": 16,
+      "lora_dropout": 0.05,
+      "packing": true,
+      "max_grad_norm": 1
+    },
+    "model": "<model_name>",
+    "object": "fine_tuning.job",
+    "organization_id": "",
+    "result_files": [],
+    "seed": 0,
+    "status": "running",
+    "trained_tokens": 0,
+    "training_file": "<file_ID>",
+    "validation_file": "<file_ID>",
+    "estimated_finish": null,
+    "suffix": ""
+  }
+  ```
+</Accordion>
+
+4. Make sure that the training was successful. To do this, check the job events. They are created when the job status changes.
+
+```bash
+curl 'https://api.studio.nebius.com/v1/fine_tuning/jobs/<job_ID>/events' \
+   -X 'GET' \
+   -H 'Accept: application/json' \
+   -H 'Authorization: Bearer $NEBIUS_API_KEY' \
+   --url-query limit=<...> \
+   --url-query after=<...>
+```
+
+You can add the following query parameters:
+
+- `limit` (integer, optional): Number of events to return.
+- `after` (string, optional): Pagination ID. Points to the event from which the response should continue.
+
+You can consider the training as finished if the response contains either the `Dataset processed successfully` or `Training completed successfully` message.
+
+5. To get the files with the fine-tuned model, first get a list of checkpoints. This list contains the IDs of the required files.
+
+   A checkpoint is created after every epoch of training a model, so you can get intermediate results of the training. If you need final results, use the files from the last checkpoint.
+
+   To get the checkpoint list, send the following request:
+
+   ```bash
+   curl 'https://api.studio.nebius.com/v1/fine_tuning/jobs/<job_ID>/checkpoints' \
+      -X 'GET' \
+      -H 'Accept: application/json' \
+      -H 'Authorization: Bearer $NEBIUS_API_KEY'
+   ```
+
+   The IDs of the model files are specified in the `data.result_files` field.
+6. Find out the name and extension of every required file:
+
+   ```bash
+   curl 'https://api.studio.nebius.com/v1/files/<file_ID>' \
+      -X 'GET' \
+      -H 'Accept: application/json' \
+      -H 'Authorization: Bearer $NEBIUS_API_KEY'
+   ```
+
+   Send this request for every file of the checkpoint that you need.
+
+   Use the `filename` field to save the files properly. For example, if file A has `adapter_config.json` as its `filename`, save this file contents as the `adapter_config.json` file.
+7. Retrieve the contents of the files with the fine-tuned model:
+
+   ```bash
+   curl 'https://api.studio.nebius.com/v1/files/<file_ID>/content' \
+      -X 'GET' \
+      -H 'Accept: application/json' \
+      -H 'Authorization: Bearer $NEBIUS_API_KEY'
+   
+   ```
+
+   Send this request for every file of the checkpoint that you need.
+8. Copy the file contents from the response, and then save the files by using a proper name and extension (see the `filename`field in the output of the previous request).
+
+Now, you can use these files to host the fine-tuned model and work with it.
 
 ## **API specification for a fine-tuning job**
 
