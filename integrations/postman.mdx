@@ -1,0 +1,111 @@
+---
+title: "Postman"
+description: "Nebius AI Studio on Postman API Network."
+---
+
+You can use a [Postman collection](https://www.postman.com/nebius-ai-studio/nebius-ai-studio/collection) to work with Nebius AI Studio. This collection allows you to do the following:
+
+- Test the Nebius AI Studio API in a ready Postman collection
+- Explore abilities of Nebius AI Studio and find useful features for your application
+- Debug the code by using Postman
+
+The collection includes pre-configured requests and scripts to simplify integration and testing.
+
+## **Install Postman**
+
+1. [Sign in](https://identity.getpostman.com/login) to Postman or create a new account. You can use your Google account or SSO.
+2. [Download](https://www.postman.com/downloads/) and install the Postman desktop application.
+
+   You can only work with the Nebius AI Studio collection from the desktop application.
+
+## **Set up the collection**
+
+1. Fork the Postman collection by Nebius AI Studio to your workspace. To do this, select **Nebius AI Studio API** in the sidebar and then select **Fork** in the upper right. The collection copy is created where you can add variables and customize requests.
+
+   You can create a fork only if [your profile is public](https://learning.postman.com/docs/collaborating-in-postman/using-version-control/forking-elements/#create-a-fork).
+2. [Create an API key](https://docs.nebius.com/studio/api/authentication) for authentication.
+3. To store the key in the Postman vault, create a variable with the key. To do this, select the collection in the sidebar and then go to the **Authorization** tab. Next, click on the `{{vault:nebius-api-key}}` variable. Postman prompts you to paste the key and create a vault.
+
+## **Send a request**
+
+Open the fork in the Postman application and select an endpoint to be tested.
+
+To send a request:
+
+1. Create and set the necessary variables. The variables, including the model name, settings and context, are enclosed in curly brackets `{{` `}}`.
+   - To set variables for a particular request, open its body and hover over the variables in it. For example, image-to-text generation requires a `model_vision` variable with a name of a [vision model](https://docs.nebius.com/studio/inference/models/vision).
+   - To set variables for all requests in the collection, select the collection in the sidebar and then go to the **Variables** tab. On this tab, you can also add new variables.
+2. Finish a pre-request script if it is included in the required method of the collection. On the page of the required endpoint, go to the **Scripts** tab. If there is a pre-request script that fills in the context or settings for the model, update the script with your content.
+
+<Accordion title="Example for text-to-text generation">
+  The pre-request script creates a `messages` variable with chat contents and then assigns it to the `messages` collection variable:
+
+  ```
+  let messages = [
+     {
+        "role": "system",
+        "content": "You are a helpful assistant. Answer succinctly and to the point and always add 'haha ' after each word you print out."
+     },
+     {
+        "role": "user",
+        "content": "Which team won the UEFA Champions League in 2019?"
+     },
+     {
+        "role": "assistant",
+        "content": "Liverpool haha FC haha"
+     },
+     {
+        "role": "user",
+        "content": "Who scored in the final?"
+     }
+  ];
+  
+  pm.collectionVariables.set('messages', JSON.stringify(messages));
+  ```
+
+  Replace the system prompt, user's and assistant's messages with your own chat messages. Add more messages if needed, but make sure that the last message is from the `user`.
+
+  For more information on how to set variables in scripts, see the [Postman documentation](https://learning.postman.com/docs/sending-requests/variables/variables/).Click **Send**.
+
+  After the request is processed, the response and the test results are displayed.
+
+  To refine further, you may want to add post-response scripts that test or visualize the responses.Click **Send**.
+
+  After the request is processed, the response and the test results are displayed.
+
+  To refine further, you may want to add post-response scripts that test or visualize the responses.Click **Send**.
+
+  After the request is processed, the response and the test results are displayed.
+
+  To refine further, you may want to add post-response scripts that test or visualize the responses.Click **Send**.
+
+  After the request is processed, the response and the test results are displayed.
+
+  To refine further, you may want to add post-response scripts that test or visualize the responses.Click **Send**.
+
+  After the request is processed, the response and the test results are displayed.
+
+  To refine further, you may want to add post-response scripts that test or visualize the responses.Click **Send**.
+
+  After the request is processed, the response and the test results are displayed.
+
+  To refine further, you may want to add post-response scripts that test or visualize the responses.Click **Send**.
+
+  After the request is processed, the response and the test results are displayed.
+
+  To refine further, you may want to add post-response scripts that test or visualize the responses.Click **Send**.
+
+  After the request is processed, the response and the test results are displayed.
+
+  To refine further, you may want to add post-response scripts that test or visualize the responses.Click **Send**.
+
+  After the request is processed, the response and the test results are displayed.
+
+  To refine further, you may want to add post-response scripts that test or visualize the responses.
+</Accordion>
+
+3. Click **Send**.
+
+After the request is processed, the response and the test results are displayed.
+
+To refine further, you may want to add post-response scripts that test or visualize the responses.

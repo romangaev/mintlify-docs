@@ -1,5 +1,161 @@
 ---
-title: 'New file'
-description: 'Description of your new file.'
+title: "Hugging Face"
+description: "Integration of Nebius AI Studio with Hugging Face."
 ---
 
+You can use the Nebius AI Studio third-party integration with [Hugging Face](https://huggingface.co/). It enables you to explore and test models on the Hugging Face Model Hub and integrate them into your applications by using the Hugging Face SDK. See a [list of available models](https://huggingface.co/models?inference_provider=nebius).
+
+## **Prerequisites**
+
+1. [Create an API key](https://studio.nebius.com/settings/api-keys) to authorize requests to Nebius AI Studio.
+2. If you want to work with Nebius AI Studio models in the [Hugging Face Model Hub](https://docs.nebius.com/studio/inference/integrations/huggingface#hub), add the Nebius AI Studio API key to your Hugging Face account:
+   - [Create a Hugging Face account](https://huggingface.co/join).
+   - Go to the [Inference Providers](https://huggingface.co/settings/inference-providers) section in your Hugging Face user account settings.
+   - In the **Nebius AI Studio** row, click the key icon in the **Routing mode** column.
+   - In the window that opens, enter your Nebius AI Studio API key.
+
+<Tip>
+  You can choose not to use the Nebius AI Studio API key. In this case, you can still work with the models, but then you pay for their usage via your Hugging Face account.
+</Tip>
+
+3. If you want to work with Nebius AI Studio models via the [Hugging Face SDK](https://docs.nebius.com/studio/inference/integrations/huggingface#sdk), install the Hugging Face libraries for the programming language that you prefer:
+
+   <Tabs>
+     <Tab title="Python">
+       Install the [huggingface_hub](https://huggingface.co/docs/huggingface_hub/en/guides/inference) package (version v0.29.0 or later):
+
+       ```
+       pip install huggingface_hub>=0.29.0
+       ```
+     </Tab>
+     <Tab title="Node.js">
+       Install the [@huggingface/inference](https://www.npmjs.com/package/@huggingface/inference) package:
+
+       ```
+       npm install @huggingface/inference
+       ```
+     </Tab>
+   </Tabs>
+
+## **How to work with Nebius AI Studio models in the Hugging Face Model Hub**
+
+### The Hugging Face Model Hub enables you to see models, review information about them on model cards and interact with models directly in the browser.
+
+To work with Nebius AI Studio models:
+
+1. Go to the [Models](https://huggingface.co/models?inference_provider=nebius) section.
+2. Make sure that Nebius AI Studio is selected in the **Other** → **Inference Providers** filter.
+3. Go to the page of the required model.
+4. In the **Inference Providers** section, select Nebius AI Studio.
+5. Interact with the model in the same section. For example, if you selected a text-to-text model, you can send a prompt to it.
+
+   If you want to work with a model in the Hugging Face playground where you can change the model settings, click **Open playground**.
+
+## **How to work with Nebius AI Studio models via the Hugging Face SDK**
+
+### **Text-to-text models**
+
+Use the `InferenceClient` class by Hugging Face to send a multi-message request.
+
+Specify your API key in this class. You can use either a Nebius AI Studio API key or a Hugging Face API key to work with the SDK. Depending on your choice, you are billed for the model usage via your Nebius AI Studio or Hugging Face account.
+
+<Tabs>
+  <Tab title="Python">
+    ```python
+    from huggingface_hub import InferenceClient
+    
+    client = InferenceClient(
+        provider="nebius", 
+        api_key="<your_API_key>"
+    )
+    
+    messages=[
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": "Tell me an easy ice cream recipe."},
+    ]
+    
+    completion = client.chat.completions.create(
+        model="Qwen/Qwen2.5-VL-72B-Instruct",  
+        messages=messages, 
+        max_tokens=500
+    )
+    
+    print(completion.choices[0].message.content)
+    ```
+  </Tab>
+  <Tab title="Node.js">
+    ```javascript
+    import { InferenceClient } from "@huggingface/inference";
+    
+    const client = new InferenceClient("<your_API_key>");
+    
+    const chatCompletion = await client.chatCompletion({
+        model: "Qwen/Qwen2.5-VL-72B-Instruct",
+        messages: [
+           {
+              role: "system",
+              content: "You are a helpful assistant."
+           },
+           {
+              role: "user",
+              content: "Tell me an easy cookie recipe."
+           }
+        ],
+        provider: "nebius",
+        max_tokens: 500
+    });
+    
+    // Log the response
+    console.log(chatCompletion.choices[0].message);
+    ```
+  </Tab>
+</Tabs>
+
+Change this code to fit your needs:
+
+- To work with a different model, change the `model` parameter. See a [list of available models](https://huggingface.co/models?inference_provider=nebius&pipeline_tag=text-generation).
+- Modify `messages` to specify your questions.
+
+### **Text-to-image models**
+
+Use the `InferenceClient` class by Hugging Face to generate images.
+
+Specify your API key in this class. You can use either a Nebius AI Studio API key or a Hugging Face API key to work with the SDK. You are billed for model usage in the service whose key you use.
+
+<Tabs>
+  <Tab title="Python">
+    ```python
+    from huggingface_hub import InferenceClient
+    
+    client = InferenceClient(
+        provider="nebius", 
+        api_key="<your_API_key>"
+    )
+    
+    image = client.text_to_image(
+        "Map of a space station with cultivated plants and living quarters",
+        model="stabilityai/stable-diffusion-xl-base-1.0"
+    )
+    
+    image.show()
+    ```
+  </Tab>
+  <Tab title="Node.js">
+    ```javascript
+    import { InferenceClient } from "@huggingface/inference";
+    
+    const client = new InferenceClient("<your_API_key>");
+    
+    const generatedImage = await client.textToImage({
+        model: "stabilityai/stable-diffusion-xl-base-1.0",
+        inputs: "Map of a space station with cultivated plants and living quarters",
+        provider: "nebius"
+    });
+    ```
+  </Tab>
+</Tabs>
+
+Change this code to fit your needs:
+
+- To work with a different model, change the `model` parameter. See a [list of available models](https://huggingface.co/models?inference_provider=nebius&pipeline_tag=text-to-image).
+- Modify the description of the image that should be generated.

@@ -1,0 +1,143 @@
+---
+title: "Portkey"
+description: "Integration of Nebius AI Studio with Portkey."
+---
+
+You can work with Nebius AI Studio by using [Portkey](https://portkey.ai/docs/introduction/what-is-portkey). The integration is based on the [AI Gateway by Portkey](https://portkey.ai/docs/product/ai-gateway). The AI Gateway allows users to send requests to different AI providers and still use the same Portkey interface. The solution assumes that you send requests to the AI Gateway, and then it routes and sends them to Nebius AI Studio. As a result, you interact with [Nebius AI Studio models](https://docs.nebius.com/studio/inference/models) via Portkey.
+
+The integration is based on the OpenAI Node.js package and the Nebius AI Studio provider for Portkey.
+
+To use the integration, do the following:
+
+1. [Create a Nebius API key](https://docs.nebius.com/studio/api/authentication) for authentication.
+2. [Create a Portkey API key](https://portkey.ai/docs/api-reference/inference-api/authentication#obtaining-your-api-key) for authentication.
+3. Save the keys to the environment variables:
+
+   ```
+   export NEBIUS_API_KEY=<Nebius_API_key>
+   export PORTKEY_API_KEY=<Portkey_API_key>
+   ```
+4. Configure the integration:
+
+   <Tabs>
+     <Tab title="Node.js">
+       1. Install the Portkey SDK:
+
+          ```
+          npm i --save portkey-ai
+          ```
+       2. Create the following `portkey.js` script:
+
+          ```javascript
+          import OpenAI from 'openai'; // v4 SDK
+          import { PORTKEY_GATEWAY_URL, createHeaders } from 'portkey-ai'
+          
+          const openai = new OpenAI({
+            apiKey: process.env["NEBIUS_API_KEY"],
+            baseURL: PORTKEY_GATEWAY_URL,
+            defaultHeaders: createHeaders({
+              provider: "nebius",
+              apiKey: process.env["PORTKEY_API_KEY"]
+            })
+          });
+          
+          async function main() {
+            const chatCompletion = await openai.chat.completions.create({
+              messages: [{ role: 'user', content: 'Say this is a test' }],
+              model: 'deepseek-ai/DeepSeek-R1-fast',
+            });
+          
+            console.log(chatCompletion.choices);
+          }
+          
+          main();
+          ```
+
+          This script sends a multi-message request to the specified model in Nebius AI Studio.
+       3. Run the script:
+
+          ```
+          node portkey.js
+          ```
+
+          The output is the following:
+
+          ```
+          [
+            {
+              finish_reason: 'stop',
+              index: 0,
+              logprobs: null,
+              message: {
+                content: 'This is a test. How can I assist you further?',
+                refusal: null,
+                role: 'assistant',
+                audio: null,
+                function_call: null,
+                tool_calls: []
+              },
+              stop_reason: null
+            }
+          ]
+          ```
+     </Tab>
+     <Tab title="cURL">
+       Send the following request:
+
+       ```bash
+       curl https://api.portkey.ai/v1/chat/completions \
+         -H "Content-Type: application/json" \
+         -H "Authorization: Bearer $NEBIUS_API_KEY" \
+         -H "x-portkey-api-key: $PORTKEY_API_KEY" \
+         -H "x-portkey-provider: nebius" \
+         -d '{
+           "messages": [{
+               "role": "system",
+               "content": "You are a helpful assistant."
+             },{
+               "role": "user",
+               "content": "Hello!"
+           }]
+         }'
+       ```
+
+       The output is the following (below is a pretty-printed version, the `curl` command returns output in one line):
+
+       ```
+       {
+         "id": "chatcmpl-b4586***",
+         "choices": [
+           {
+             "finish_reason": "stop",
+             "index": 0,
+             "logprobs": null,
+             "message": {
+               "content": "Hello! How can I assist you today? Feel free to ask any questions or let me know if you need help with anything. 😊",
+               "refusal": null,
+               "role": "assistant",
+               "audio": null,
+               "function_call": null,
+               "tool_calls": [],
+               "reasoning_content": null
+             },
+             "stop_reason": null
+           }
+         ],
+         "created": 1740159035,
+         "model": "Qwen/Qwen2.5-72B-Instruct-fast",
+         "object": "chat.completion",
+         "service_tier": null,
+         "system_fingerprint": null,
+         "usage": {
+           "completion_tokens": 29,
+           "prompt_tokens": 21,
+           "total_tokens": 50,
+           "completion_tokens_details": null,
+           "prompt_tokens_details": null
+         },
+         "prompt_logprobs": null,
+         "provider": "nebius"
+       }
+       ```
+     </Tab>
+   </Tabs>
