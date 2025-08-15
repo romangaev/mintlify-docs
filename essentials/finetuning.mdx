@@ -11,7 +11,7 @@ icon: "layer-group"
 
    You can optionally create an additional dataset for validation. Split the data between two datasets as 80–90% for training and 10–20% for validation. Requirements for validation datasets are the same as for training datasets.
 3. [Create an API key](https://docs.nebius.com/studio/api/authentication) for authentication.
-4. Save the API key to an environment variable: 
+4. Save the API key to an environment variable:
 
    ```
    export NEBIUS_API_KEY=<API_key>
@@ -146,3 +146,108 @@ Now, you can use these files to [host the fine-tuned model](https://docs.nebius.
 ## **API specification for a fine-tuning job**
 
 The object below represents the fine-tuning job specification used in the API.
+
+```json
+{
+    "model": "<...>",
+    "suffix": "<...>",
+    "training_file": "<...>",
+    "validation_file": "<...>",
+    "hyperparameters": {
+        "batch_size": "<...>",
+        "learning_rate_multiplier": "<...>",
+        "n_epochs": "<...>",
+        "warmup_ratio": "<...>",
+        "weight_decay": "<...>",
+        "lora": "<true|false>",
+        "lora_r": "<...>",
+        "lora_alpha": "<...>",
+        "lora_dropout": "<...>",
+        "packing": "<true|false>",
+        "max_grad_norm": "<...>"
+    },
+    "seed": "<...>",
+    "integrations": [
+        {
+            "type": "wandb",
+            "wandb": {
+                "api_key": "<...>",
+                "project": "<...>"
+            }
+        }
+    ]
+}
+```
+
+- `model` (string, required): [Model](https://docs.nebius.com/studio/fine-tuning/models) to fine-tune.
+- `suffix` (string, optional): Suffix added to the model name (for example, `my-model`or `my-experiment`). It helps you differentiate between fine-tuned models in their list.
+- `training_file` (string, required): ID of the file with the training dataset.
+
+  For more information about how to prepare and upload datasets and how to get their IDs, see the following instructions:
+  - [How to create a dataset for fine-tuning in Nebius AI Studio](https://docs.nebius.com/studio/fine-tuning/datasets)
+  - [How to fine-tune a model](https://docs.nebius.com/studio/fine-tuning/how-to-fine-tune#instructions)
+- `validation_file` (string, optional): ID of the file with the validation dataset.
+- `hyperparameters` (object, optional): Fine-tuning parameters:
+  - `batch_size` (integer, optional): Number of training examples used in a batch for fine-tuning. A bigger batch size works better with bigger datasets.
+
+    From `8` to `32`. Default: `8`.
+  - `learning_rate` (float, optional): Learning rate for training. If you train a model in a domain in which the model has not been trained before, you may need a higher learning rate.
+
+    Greater or equal to `0`. Default: `0.00001`.
+  - `n_epochs` (integer, optional): Number of epochs to train on the dataset.
+
+    An epoch is a cycle of going through the whole dataset for training. For example, if the number of epochs is `10`, the model is trained on a given dataset 10 times.
+
+    From `1` to `20`. Default: `3`.
+  - `warmup_ratio` (float, optional): Percentage by which the learning rate should increase from the beginning of training.
+
+    From `0` to `1`. Default: `0`.
+  - `weight_decay` (float, optional): Weight decay value.
+
+    Weight decay is a regularization technique that adds a penalty to the loss function and keeps fine-tuning weights small. This approach prevents overfitting and preserves generalization, so it is better suited for larger models or more complex tasks.
+
+    Greater or equal to `0`. Default: `0`.
+  - `lora` (boolean, optional): Whether to enable LoRA (Low-Rank Adaptation) for training.
+
+    The LoRA method presumes that low-rank matrices are inserted into a pre-trained model. These matrices catch task-specific data during the training. As a result, you only train these matrices; you do not need to retrain the whole model and modify any preset fine-tuning parameters.
+
+    If `false`, full fine-tuning is performed.
+
+    Default: `false`.
+  - `lora_r` (integer, optional): Rank for weights of LoRA adapters.
+
+    A larger rank captures more pre-existing model weights for training. Eventually, the model is trained better, especially if it is trained for a task for which it has not been trained before. However, ranking too high can cause overfitting.
+
+    From `8` to `128`. Default: `8`.
+  - `lora_alpha` (integer, optional): Alpha value for training LoRA adapters.
+
+    This parameter balances the influence of low-rank LoRA matrices on pre-existing model weights. If only a slight adjustment of a model is required, use a lower value.
+
+    Greater or equal to `8`. Default: `8`.
+  - `lora_dropout` (float, optional): LoRA dropout rate.
+
+    LoRA dropout is a regularization technique that randomly omits a fraction of the model's LoRA parameters during training. As a result, this technique helps avoid overfitting on the dataset, especially in cases when the dataset is small and the model should suit more general tasks.
+
+    From `0` to `1`. Default: `0`.
+  - `packing` (boolean, optional): Whether to use packing for training. With packing enabled, you can combine multiple small samples in a batch instead of having one sample per batch. This increases training efficiency.
+
+    Default: `true`.
+  - `max_grad_norm` (float, optional): Maximum gradient norm value used for gradient clipping.
+
+    Make sure that the value is not too large or small:
+    - A value that is too large causes the [vanishing gradient problem](https://en.wikipedia.org/wiki/Vanishing_gradient_problem). It happens when weight gradients become too small during backpropagation. As a result, the model cannot learn quickly enough.
+    - A value that is too small causes the exploding gradient problem, which is the opposite to the vanishing gradient problem. Explosion happens when weight gradients get large. As a result, it leads to unstable and unoptimized training.
+
+    Greater or equal to `0`. Default: `1`.
+- `seed` (integer, optional): Control of the LLM output reproduction. If you pass along the same `seed` in different requests, you achieve approximately the same results.
+
+  If you use the same seed but different values of other parameters, the results of your requests might differ.
+- `integrations` (array, optional): Integrations that Nebius AI Studio supports for fine-tuning:
+  - `type` (string, optional): Integration type. The possible values are the following:
+    - `wandb`: Integration with [Weights & Biases](https://wandb.ai/site/).
+    - `mlflow`: Integration with [MLflow](https://mlflow.org/).
+
+    You can export the model training metrics to a project in Weights & Biases or to an MLflow cluster. Nebius AI Studio exports the metrics after you create a fine-tuning job. The service does not export system metrics or logs.
+  - `wandb` (object, optional): Settings for the export to a project in Weights & Biases:
+    - `api_key` (string, optional): [API key](https://docs.wandb.ai/support/find_api_key/) from Weights & Biases. The key should be 40 characters long.
+    - `project` (string, optional): Name of the project in Weights & Biases.
