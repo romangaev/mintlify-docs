@@ -1,5 +1,188 @@
 ---
-title: 'New file'
-description: 'Description of your new file.'
+title: "Vision Models"
 ---
 
+You can use [vision models](https://docs.nebius.com/studio/inference/models/vision) to send a request related to an image and get, for example, the image description. [LlamaIndex can work](https://docs.llamaindex.ai/en/stable/examples/multi_modal/nebius_multi_modal/) with images that are accessible by a URL or stored locally.
+
+## **Prerequisites**
+
+1. [Create an API key](https://docs.nebius.com/studio/api/authentication) for authentication.
+2. Save the API key to an environment variable:
+
+   ```
+   export NEBIUS_API_KEY=<API_key>
+   ```
+3. Install LlamaIndex packages:
+
+   ```
+   pip3 install llama-index-multi-modal-llms-nebius \
+      llama-index matplotlib
+   ```
+
+   Since Nebius AI Studio supports an OpenAI-compatible API, the `llama-index-multi-modal-llms-nebius` package includes the `llama-index-multi-modal-llms-openai` package.
+
+   <Expandable title="If you get error: externally_managed_ environment">
+     Create a [virtual Python environment](https://docs.python.org/3/library/venv.html). You can install packages there that are isolated from the basic environment.
+
+     To prepare a virtual environment:
+     1. Create it:
+
+        ```
+        python3 -m venv <environment_name>
+        ```
+     2. Activate the environment:
+
+        ```
+        source <environment_name>/bin/activate
+        ```
+
+        A directory with the environment name is created.
+
+     Now, you can install required Python packages. When you no longer need the created virtual environment, run the `deactivate` command and delete the environment directory.
+   </Expandable>
+
+## **Prepare a script**
+
+1. Set up the Nebius AI Studio environment:
+
+   ```python
+   import os
+   from llama_index.multi_modal_llms.nebius import NebiusMultiModal
+   from PIL import Image
+   import matplotlib.pyplot as plt
+   
+   # Take the API key from the environment variable
+   NEBIUS_API_KEY = os.getenv("NEBIUS_API_KEY")
+   
+   # Load a model
+   mm_llm = NebiusMultiModal(
+       model="Qwen/Qwen2-VL-72B-Instruct",
+       api_key=NEBIUS_API_KEY,
+       max_new_tokens=300,
+   )
+   ```
+2. Load a local image or an image accessible by a URL:
+
+   <Tabs>
+     <Tab title="Local">
+       ```python
+       from llama_index.core import SimpleDirectoryReader
+       
+       # Enter the path to the required image
+       image_documents = SimpleDirectoryReader(
+           input_files=["<path/to/image>"]
+       ).load_data()
+       img = Image.open("<path/to/image>")
+       plt.imshow(img)
+       ```
+     </Tab>
+     <Tab title="From URL">
+       ```python
+       from llama_index.core.multi_modal_llms.generic_utils import load_image_urls
+       import requests
+       from io import BytesIO
+       
+       # Add a link to an image
+       image_urls = [
+           "https://res.cloudinary.com/hello-tickets/image/upload/c_limit,f_auto,q_auto,w_1920/v1640835927/o3pfl41q7m5bj8jardk0.jpg",
+       ]
+       image_documents = load_image_urls(image_urls)
+       
+       # Upload images from URLs
+       img_response = requests.get(image_urls[0])
+       img = Image.open(BytesIO(img_response.content))
+       plt.imshow(img)
+       ```
+
+       This script uploads the following image:
+
+       ![Colosseum Pn](/images/colosseum.png)
+     </Tab>
+   </Tabs>
+3. Add one of the following methods to the script, depending on your use case:
+
+   | **Use case**                                                           | **Description**                                                                                                                   | **How to implement**                                                                                                                                                                                                                                                   |
+   | :--------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+   | Prompt                                                                 | Ask a question as a prompt.                                                                                                       | Call the following method:  <br /><br />`mm_llm.complete(     `<br />    `prompt="Describe the image as an           alternative text",                         image_documents=image_documents, )`                                                                    |
+   | Streaming output                                                       | Output is printed out word by word. This can be helpful for chats, so the user can watch how the answer is being typed gradually. | Call the `mm_llm.stream_complete()` method and put in it `prompt` and `image_documents` as well. Next, print out the response:  <br />  <br />`for r in response:     `<br />`   print(r.delta, end="")`                                                               |
+   | Multi-message request                                                  | Include system prompts and a chat history to your request, so Nebius AI Studio returns more precise output.                       | Make an array of messages and then pass it along in the `mm_llm.chat()` method. For more details, see [Examples](https://docs.nebius.com/studio/inference/integrations/llamaindex/vision#multi-message).                                                               |
+   | Multi-message request with streaming output                            | Add system prompts and a chat history and receive the streaming output.                                                           | Make an array of messages and then pass it along in the `mm_llm.stream_chat()` method.                                                                                                                                                                                 |
+   | Asynchronous request                                                   | Call a method asynchronously, so the next methods do not wait until it is finished.                                               | Call the `await mm_llm.acomplete()` method and put in it `prompt` and `image_documents` as for a regular prompt.                                                                                                                                                       |
+   | Asynchronous request with streaming output                             | Call a method asynchronously and have output typed word by word.                                                                  | Call the `await mm_llm.astream_complete()` method with `prompt` and `image_documents` within it. Next, print out the response with `async`. For more details, see [Examples](https://docs.nebius.com/studio/inference/integrations/llamaindex/vision#async-streaming). |
+   | Asynchronous request with a multi-message request                      | Call a method asynchronously and add system prompts and a chat history.                                                           | Make an array of messages and then pass it along in the `await mm_llm.achat()` method.                                                                                                                                                                                 |
+   | Asynchronous request with a multi-message request and streaming output | Combine asynchronous behavior, system prompts, a chat history and streaming output.                                               | Make an array of messages and then pass it along in the `await mm_llm.astream_chat()` method. Next, print out the response with `async`.                                                                                                                               |
+
+## **Examples**
+
+### **Multi-message request**
+
+To include a chat history and get a response to the last message in this chat, add the code below to the [main part of the script](https://docs.nebius.com/studio/inference/integrations/llamaindex/vision#script):
+
+```python
+from llama_index.multi_modal_llms.openai.utils import (
+    generate_openai_multi_modal_chat_message,
+)
+
+# Create a chat as a list of messages
+chat_msg_1 = generate_openai_multi_modal_chat_message(
+    prompt="Describe the images as an alternative text",
+    role="user",
+    image_documents=image_documents,
+)
+
+chat_msg_2 = generate_openai_multi_modal_chat_message(
+    prompt="The image is a graph showing the surge in US mortgage rates. It is a visual representation of data, with a title at the top and labels for the x and y-axes. Unfortunately, without seeing the image, I cannot provide specific details about the data or the exact design of the graph.",
+    role="assistant",
+)
+
+chat_msg_3 = generate_openai_multi_modal_chat_message(
+    prompt="can I know more?",
+    role="user",
+)
+
+chat_messages = [chat_msg_1, chat_msg_2, chat_msg_3]
+chat_response = mm_llm.chat(
+    messages=chat_messages,
+)
+
+# Get a reply to the last message
+for msg in chat_messages:
+    print(msg.role, msg.content)
+print("Response:")
+print(chat_response)
+```
+
+The output is the following:
+
+```
+MessageRole.USER Describe the images as an alternative text
+MessageRole.ASSISTANT The image is a graph showing the surge in US mortgage rates. It is a visual representation of data, with a title at the top and labels for the x and y-axes. Unfortunately, without seeing the image, I cannot provide specific details about the data or the exact design of the graph.
+MessageRole.USER can I know more?
+Response:
+assistant: The image is a graph that displays the increase in US mortgage rates. It is a visual representation of data, with a title at the top and labels for the x and y-axes. The x-axis likely represents time, while the y-axis represents the mortgage rates. The graph may include lines or bars to show the trend over time. Without seeing the image, I cannot provide specific details about the data or the exact design of the graph.
+```
+
+The reply to the last message goes after the `Response` line.
+
+#### **Asynchronous request with streaming output**
+
+To send an asynchronous request and receive streaming output, add the code below to the [main part of the script](https://docs.nebius.com/studio/inference/integrations/llamaindex/vision#script):
+
+```python
+import asyncio
+
+async def complete():
+    response_astream_complete = await mm_llm.astream_complete(
+        prompt="Describe the images as an alternative text",
+        image_documents=image_documents,
+    )
+    async for delta in response_astream_complete:
+        print(delta.delta, end="")
+asyncio.run(complete())
+```
+
+The output is the following:
+
+```
+The image depicts the Colosseum in Rome, illuminated at night. The iconic structure is lit up with colorful lights, displaying the Italian flag's colors: green, white, and red. The lighting highlights the architectural details of the Colosseum, showcasing its arches and columns. The sky above is dark, with a few clouds, and the surrounding area is dimly lit, emphasizing the vibrant colors of the Colosseum.
+```
