@@ -84,6 +84,7 @@
               {
                 "group": "Examples",
                 "pages": [
+                  "api-reference/examples/overview",
                   "api-reference/examples/text-generation",
                   "api-reference/examples/vision-capabilities",
                   "api-reference/examples/text-generation-for-code-autocomplete",
