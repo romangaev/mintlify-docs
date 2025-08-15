@@ -32,7 +32,7 @@
             ]
           },
           {
-            "group": "AI models inference",
+            "group": "Utilities",
             "pages": [
               "ai-models-inference/prompt-presets"
             ]
