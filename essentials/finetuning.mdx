@@ -11,275 +11,104 @@ icon: "layer-group"
 
    You can optionally create an additional dataset for validation. Split the data between two datasets as 80–90% for training and 10–20% for validation. Requirements for validation datasets are the same as for training datasets.
 3. [Create an API key](https://docs.nebius.com/studio/api/authentication) for authentication.
-4. Save the API key to an environment variable:
+4. Save the API key to an environment variable: 
 
-`export NEBIUS_API_KEY=<API_key>`
+   ```
+   export NEBIUS_API_KEY=<API_key>
+   ```
 
 ## **How to fine-tune a model**
 
-`pip3 install openai`
-
-`import os`
-
-`from openai import OpenAI`
-
-`import time`
-
-`client = OpenAI(`
-
-`    base_url="https://api.studio.nebius.com/v1/",`
-
-`    api_key=os.environ.get("NEBIUS_API_KEY"),`
-
-`)`
-
-`# Upload a training dataset`
-
-`training_dataset = client.files.create(`
-
-`    file=open("<dataset_name>.jsonl", "rb"), # Specify the dataset name`
-
-`    purpose="fine-tune"`
-
-`)`
-
-`# Upload a validation dataset`
-
-`validation_dataset = client.files.create(`
-
-`    file=open("<dataset_name>.jsonl", "rb"), # Specify the dataset name`
-
-`    purpose="fine-tune"`
-
-`)`
-
-`# Fine-tuning job parameters`
-
-`job_request = {`
-
-`    "model": "<...>",`
-
-`    "training_file": training_dataset.id,`
-
-`    "validation_file": validation_dataset.id,`
-
-`    "hyperparameters": {`
-
-`        "batch_size": <...>,`
-
-`        "learning_rate": <...>,`
-
-`        "n_epochs": <...>,`
-
-`        "warmup_ratio": <...>,`
-
-`        "weight_decay": <...>,`
-
-`        "lora": <True|False>,`
-
-`        "lora_r": <...>,`
-
-`        "lora_alpha": <...>,`
-
-`        "lora_dropout": <...>,`
-
-`        "packing": <True|False>,`
-
-`        "max_grad_norm": <...>,`
-
-`    },`
-
-`    "integrations": [`
-
-`        {`
-
-`            "type": "wandb",`
-
-`            "wandb": {`
-
-`                "api_key": "<...>",`
-
-`                "project": "<...>",`
-
-`            },`
-
-`        },`
-
-`        {`
-
-`            "type": "mlflow",`
-
-`            "mlflow": {`
-
-`               "tracking_uri": "<...>",`
-
-`               "certificate_file": "<...>",`
-
-`               "username": "<...>",`
-
-`               "password": "<...>",`
-
-`               "experiment_name": "<...>",`
-
-`               "run_name": "<...>",`
-
-`            },`
-
-`         },`
-
-`    ],`
-
-`}`
-
-`# Create and run the fine-tuning job`
-
-`job = client.fine_tuning.jobs.create(**job_request)`
-
-`# Make sure that the job has been finished or cancelled`
-
-`active_statuses = ["validating_files", "queued", "running"]`
-
-`while job.status in active_statuses:`
-
-`    time.sleep(15)`
-
-`    job = client.fine_tuning.jobs.retrieve(job.id)`
-
-`    print("current status is", job.status)`
-
-`print("Job ID:", job.id)`
-
-`if job.status == "succeeded":`
-
-`    # Check the job events`
-
-`    events = client.fine_tuning.jobs.list_events(job.id)`
-
-`    print(events)`
-
-`    for checkpoint in client.fine_tuning.jobs.checkpoints.list(job.id).data:`
-
-`        print("Checkpoint ID:", checkpoint.id)`
-
-`        # Create a directory for every checkpoint`
-
-`        os.makedirs(checkpoint.id, exist_ok=True)`
-
-`        for model_file_id in checkpoint.result_files:`
-
-`            # Get the name of a model file`
-
-`            filename = client.files.retrieve(model_file_id).filename`
-
-`            # Retrieve the contents of the file`
-
-`            file_content = client.files.content(model_file_id)`
-
-`            # Save the contents into a local file`
-
-`            file_content.write_to_file(filename)`
-
-The script stages are the following:
-
-1. Uploads a training and a validation dataset. The validation dataset is optional.
-2. Creates a fine-tuning job.
-
-   For more information about the fine-tuning job parameters, see the specification of the [fine-tuning job object](https://docs.nebius.com/studio/fine-tuning/how-to-fine-tune#job-specs).
-3. Checks that the job status is `succeeded`.
+1. Using Python : Install openai package:
+
+   ```python
+   pip3 install openai
+   ```
+2. Import essential librarires
+
+   ```python
+   import os
+   from openai import OpenAI
+   import time
+   ```
+3. Set up Nebius API key
+
+   ```python
+   client = OpenAI(
+       base_url="https://api.studio.nebius.com/v1/",
+       api_key=os.environ.get("NEBIUS_API_KEY"),
+   )
+   ```
+4. Uploads a training and a validation dataset. The validation dataset is optional.
+
+   ```
+   # Upload a training dataset
+   training_dataset = client.files.create(
+       file=open("<dataset_name>.jsonl", "rb"), # Specify the dataset name
+       purpose="fine-tune"
+   )
+   
+   # Upload a validation dataset
+   validation_dataset = client.files.create(
+       file=open("<dataset_name>.jsonl", "rb"), # Specify the dataset name
+       purpose="fine-tune"
+   )
+   ```
+5. Configure Fine-tuning parameters.
+
+   For more information about the tuning job parameters, see the specification of the [fine-tuning job object](https://docs.nebius.com/studio/fine-tuning/how-to-fine-tune#job-specs).
+
+   ```python
+   # Fine-tuning job parameters
+   job_request = {
+       "model": "<...>",
+       "training_file": "training_dataset.id",
+       "validation_file": "validation_dataset.id",
+       "hyperparameters": {
+           "batch_size": "<...>",
+           "learning_rate_multiplier": "<...>",
+           "n_epochs": "<...>",
+           "warmup_ratio": "<...>",
+           "weight_decay": "<...>",
+           "lora": "<True|False>",
+           "lora_r": "<...>",
+           "lora_alpha": "<...>",
+           "lora_dropout": "<...>",
+           "packing": "<True|False>",
+           "max_grad_norm": "<...>",
+       },
+       "integrations": [{
+               "type": "wandb",
+               "wandb": {
+                   "api_key": "<...>",
+                   "project": "<...>"
+               }
+       }]
+   }
+   ```
+6. Create and run the finetuning job
+
+   ```python
+   # Create and run the fine-tuning job
+   job = client.fine_tuning.jobs.create(**job_request)
+   ```
+
+
+1. Checks that the job status is `succeeded`.
 
    The status of a freshly started job is `running`. The script polls the status periodically to make sure that the job status has changed to `succeeded`. The minimum time window between subsequent polls is 15 seconds.
 
    If the status is `failed`, examine the output. It describes the error and how to fix it. If the error code is `500`, resubmit the job.
-4. Checks that the training has been successful. To do this, check the job events. They are created when the job status changes.
+2. Checks that the training has been successful. To do this, check the job events. They are created when the job status changes.
 
    You can consider the training as finished if the response contains either the `Dataset processed successfully` or `Training completed successfully` message.
-5. Retrieves the contents of the files with the fine-tuned model.
+3. Retrieves the contents of the files with the fine-tuned model.
 
    You get the files for every fine-tuning checkpoint. A checkpoint is created after every epoch of training a model, so you get intermediate results of the training. If you need final results, use the files from the last checkpoint.
-6. Saves the contents to files. The script creates a directory per checkpoint and saves the files into these directories.
+4. Saves the contents to files. The script creates a directory per checkpoint and saves the files into these directories.
 
 Now, you can use these files to [host the fine-tuned model](https://docs.nebius.com/studio/fine-tuning/host-model) and work with it.
 
 ## **API specification for a fine-tuning job**
 
 The object below represents the fine-tuning job specification used in the API.
-
-`{`
-
-`   "model": "<...>",`
-
-`   "suffix": "<...>",`
-
-`   "training_file": "<...>",`
-
-`   "validation_file": "<...>",`
-
-`   "hyperparameters": {`
-
-`      "batch_size": <...>,`
-
-`      "learning_rate": <...>,`
-
-`      "n_epochs": <...>,`
-
-`      "warmup_ratio": <...>,`
-
-`      "weight_decay": <...>,`
-
-`      "lora": <true|false>,`
-
-`      "lora_r": <...>,`
-
-`      "lora_alpha": <...>,`
-
-`      "lora_dropout": <...>,`
-
-`      "packing": <true|false>,`
-
-`      "max_grad_norm": <...>`
-
-`   },`
-
-`   "seed": <...>,`
-
-`   "integrations": [`
-
-`      {`
-
-`         "type": "wandb",`
-
-`         "wandb": {`
-
-`            "api_key": "<...>",`
-
-`            "project": "<...>"`
-
-`         }`
-
-`      },`
-
-`      {`
-
-`         "type": "mlflow",`
-
-`         "mlflow": {`
-
-`            "tracking_uri": "<...>",`
-
-`            "certificate_file": "<...>",`
-
-`            "username": "<...>",`
-
-`            "password": "<...>",`
-
-`            "experiment_name": "<...>",`
-
-`            "run_name": "<...>"`
-
-`         }`
-
-`      }`
-
-`   ]`
-
-`}`
